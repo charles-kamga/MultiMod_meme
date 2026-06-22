@@ -1,0 +1,442 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  TextInput, 
+  Image, 
+  ActivityIndicator, 
+  PermissionsAndroid, 
+  Platform,
+  Dimensions,
+  SafeAreaView
+} from 'react-native';
+
+/**
+ * CONFIGURATION ET THEME AFRO-UX
+ * Palette mutée et chaleureuse pour un rendu haut de gamme.
+ */
+const API_URL = "http://10.0.2.2:5000/api";
+const COLORS = {
+  background: '#FAF6F0',
+  primary: '#C84B31', // Terracotta
+  secondary: '#1B4232', // Vert Forêt
+  accent: '#F4A261', // Ocre
+  textMain: '#1A1A1A',
+  textSecondary: '#64748B',
+  white: '#FFFFFF',
+  cardShadow: 'rgba(0,0,0,0.05)',
+};
+
+const { width } = Dimensions.get('window');
+
+// --- COMPOSANTS PARTAGÉS ---
+
+const AfroButton = ({ title, onPress, color = COLORS.primary, icon, variant = 'solid' }) => (
+  <TouchableOpacity 
+    style={[
+      styles.button, 
+      { backgroundColor: variant === 'solid' ? color : 'transparent', borderWidth: variant === 'outline' ? 2 : 0, borderColor: color }
+    ]} 
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    <Text style={[styles.buttonText, { color: variant === 'solid' ? COLORS.white : color }]}>{title}</Text>
+  </TouchableOpacity>
+);
+
+const Header = ({ title, subtitle, showAvatar = false, onBack }) => (
+  <View style={styles.headerContainer}>
+    {onBack && (
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
+    )}
+    <View style={styles.headerTextSection}>
+      <Text style={styles.headerTitle}>{title}</Text>
+      {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
+    </View>
+    {showAvatar && (
+      <View style={styles.avatarContainer}>
+        <View style={styles.avatarPlaceholder} />
+      </View>
+    )}
+  </View>
+);
+
+// --- ÉCRANS ---
+
+/**
+ * SCREEN 1: HomeScreen (Dashboard)
+ */
+export const HomeScreen = ({ navigation }) => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Header 
+          title="Akié ! Quel est le ndem du jour ?" 
+          subtitle="Laisse ta créativité parler pour le kwatt."
+          showAvatar={true}
+        />
+        
+        <View style={styles.cardSection}>
+          <TouchableOpacity 
+            style={[styles.mainCard, { borderLeftColor: COLORS.primary }]}
+            onPress={() => navigation.navigate('Context')}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: COLORS.primary + '20' }]}>
+               <Text style={{fontSize: 24}}>📄</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Context Reader</Text>
+              <Text style={styles.cardDesc}>Colle les discussions du kwatt pour créer un meme de clash ou de ndolo.</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.mainCard, { borderLeftColor: COLORS.secondary }]}
+            onPress={() => navigation.navigate('Voice')}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: COLORS.secondary + '20' }]}>
+               <Text style={{fontSize: 24}}>🎤</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Voice-to-Meme</Text>
+              <Text style={styles.cardDesc}>Enregistre ta voix ou un audio pour le transformer en punchline imagée.</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.mainCard, { borderLeftColor: COLORS.accent }]}
+            onPress={() => navigation.navigate('Remixer')}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: COLORS.accent + '20' }]}>
+               <Text style={{fontSize: 24}}>📷</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Status Remixer</Text>
+              <Text style={styles.cardDesc}>Prends une photo ou upload une image pour lui donner un style unique.</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.recentSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Mèmes Récents</Text>
+            <TouchableOpacity><Text style={{color: COLORS.primary}}>Voir tout</Text></TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carousel}>
+            {[1, 2, 3].map((item) => (
+              <View key={item} style={styles.carouselItem}>
+                <View style={styles.imagePlaceholder} />
+                <View style={styles.itemFooter}>
+                  <Text style={styles.itemText}>"Le ndem de la semaine..."</Text>
+                  <TouchableOpacity style={styles.shareMiniBtn}>
+                     <Text style={{fontSize: 12}}>↗️</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+/**
+ * SCREEN 2: ContextScreen
+ */
+export const ContextScreen = ({ navigation }) => {
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [mood, setMood] = useState('Clash');
+
+  const handleGenerate = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigation.navigate('Result', { type: 'text', content: text });
+    }, 2000);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header title="Analyseur de Ndoki" onBack={() => navigation.goBack()} />
+      <ScrollView contentContainerStyle={styles.scrollPadding}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            multiline
+            numberOfLines={10}
+            style={styles.textArea}
+            placeholder="Colle ou écris l'échange ici... (Ex: Ce que ma copine m'a dit ce matin...)"
+            placeholderTextColor={COLORS.textSecondary}
+            value={text}
+            onChangeText={setText}
+          />
+          <Text style={styles.charCount}>{text.length}/2000</Text>
+        </View>
+
+        <Text style={styles.label}>CHOISIR LE NDOKI (MOOD)</Text>
+        <View style={styles.moodGrid}>
+          {['Clash / Mbindi', 'Ndolo / Amour', 'Nyanga / Fierté', 'Sarcasme'].map((m) => (
+            <TouchableOpacity 
+              key={m} 
+              onPress={() => setMood(m)}
+              style={[styles.moodItem, mood === m && styles.moodItemActive]}
+            >
+              <Text style={[styles.moodText, mood === m && styles.moodTextActive]}>{m}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+        ) : (
+          <AfroButton title="Générer le Mème Textuel" onPress={handleGenerate} />
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+/**
+ * SCREEN 3: VoiceScreen
+ */
+export const VoiceScreen = ({ navigation }) => {
+  const [status, setStatus] = useState('ready'); // ready, recording, captured
+  
+  const requestMicPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          {
+            title: "Permission Microphone",
+            message: "L'application a besoin d'accéder au micro pour transformer ta voix en meme.",
+            buttonNeutral: "Plus tard",
+            buttonNegative: "Annuler",
+            buttonPositive: "OK"
+          }
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          setStatus('recording');
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header title="La Voix du Kwatt" onBack={() => navigation.goBack()} />
+      <View style={styles.voiceCenter}>
+        <TouchableOpacity 
+          style={[styles.micButton, status === 'recording' && styles.micButtonActive]}
+          onPress={status === 'ready' ? requestMicPermission : () => setStatus('captured')}
+        >
+          <Text style={{fontSize: 40, color: COLORS.white}}>🎤</Text>
+          {status === 'recording' && <View style={styles.waveOverlay} />}
+        </TouchableOpacity>
+        <Text style={styles.timer}>00:00</Text>
+        <Text style={styles.voiceInstruction}>
+          {status === 'ready' ? 'Appuie pour commencer le ndem audio.' : 
+           status === 'recording' ? 'On t\'écoute... Appuie pour arrêter.' : 
+           'Audio capturé ! Transcription IA en cours...'}
+        </Text>
+        
+        {status === 'captured' && (
+           <View style={styles.miniPlayer}>
+              <TouchableOpacity><Text>▶️ Play</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => setStatus('ready')}><Text>🗑️ Effacer</Text></TouchableOpacity>
+           </View>
+        )}
+      </View>
+      <View style={styles.footer}>
+        <AfroButton 
+          title="Envoyer l'Audio à l'IA" 
+          color={COLORS.secondary} 
+          onPress={() => navigation.navigate('Result', { type: 'voice' })}
+        />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+/**
+ * SCREEN 4: RemixerScreen
+ */
+export const RemixerScreen = ({ navigation }) => {
+  const [image, setImage] = useState(null);
+  
+  const requestGalleryPermission = async () => {
+    if (Platform.OS === 'android') {
+      const permission = Platform.Version >= 33 
+        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES 
+        : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
+        
+      const granted = await PermissionsAndroid.request(permission);
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        // Simuler sélection
+        setImage(true);
+      }
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header title="Remix de Statut" onBack={() => navigation.goBack()} />
+      <ScrollView contentContainerStyle={styles.scrollPadding}>
+        <View style={styles.previewContainer}>
+          {!image ? (
+            <View style={styles.emptyPreview}>
+               <Text style={{fontSize: 48, marginBottom: 10}}>🖼️</Text>
+               <Text style={styles.emptyText}>Aucun média sélectionné. Capture l'instant ou choisis dans ta galerie.</Text>
+            </View>
+          ) : (
+            <View style={[styles.emptyPreview, { backgroundColor: '#ddd' }]}>
+               <Text>Image Sélectionnée</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.secBtn} onPress={requestGalleryPermission}>
+            <Text style={styles.secBtnText}>Galerie</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secBtn}>
+            <Text style={styles.secBtnText}>Photo</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.inputGroup}>
+           <Text style={styles.label}>EXPRESSION CAMEROUNAISE (OPTIONNEL)</Text>
+           <TextInput style={styles.shortInput} placeholder="Ex: Ndem, Akié, C'est le feu..." />
+        </View>
+
+        <AfroButton title="Laisser Gemini Analyser" onPress={() => navigation.navigate('Result', { type: 'remix' })} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+/**
+ * SCREEN 5: ResultScreen
+ */
+export const ResultScreen = ({ navigation }) => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header title="La Consécration" onBack={() => navigation.popToTop()} />
+      <ScrollView contentContainerStyle={styles.scrollPadding}>
+        <View style={styles.resultCard}>
+          <View style={styles.resultImagePlaceholder}>
+             <Text style={styles.punchline}>QUAND TU VOIS LE NDEM ARRIVER</Text>
+          </View>
+          <View style={styles.transcriptionBox}>
+            <Text style={styles.label}>TRANSCRIPTION IA</Text>
+            <Text style={styles.transcriptionText}>"Vraiment, Akié ! On m'avait dit que le gars là était fort, mais je ne savais pas que son ndem pouvait dépasser mon entendement..."</Text>
+          </View>
+        </View>
+
+        <View style={styles.actionGrid}>
+          <TouchableOpacity style={[styles.gridBtn, { backgroundColor: '#25D366' }]}>
+            <Text style={styles.gridBtnText}>WhatsApp</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.gridBtn, { backgroundColor: COLORS.primary }]}>
+            <Text style={styles.gridBtnText}>Sauvegarder</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <TouchableOpacity style={styles.restartBtn} onPress={() => navigation.popToTop()}>
+           <Text style={styles.restartText}>Recommencer</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+// --- STYLES ---
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.background },
+  scrollPadding: { padding: 20 },
+  headerContainer: { paddingHorizontal: 20, paddingTop: 20, pb: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerTextSection: { flex: 1 },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.textMain, fontFamily: 'serif' },
+  headerSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginTop: 4 },
+  avatarContainer: { width: 45, height: 45, borderRadius: 22.5, backgroundColor: COLORS.white, elevation: 4, overflow: 'hidden' },
+  avatarPlaceholder: { flex: 1, backgroundColor: COLORS.accent },
+  backButton: { marginRight: 15, padding: 5 },
+  backButtonText: { fontSize: 24, color: COLORS.textMain },
+  
+  cardSection: { padding: 20 },
+  mainCard: { 
+    flexDirection: 'row', 
+    backgroundColor: COLORS.white, 
+    borderRadius: 24, 
+    padding: 20, 
+    marginBottom: 16, 
+    borderLeftWidth: 6,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  iconCircle: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
+  cardContent: { marginLeft: 15, flex: 1 },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.textMain },
+  cardDesc: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
+
+  recentSection: { paddingLeft: 20, marginBottom: 30 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingRight: 20, alignItems: 'center', marginBottom: 15 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.textMain },
+  carousel: { flexDirection: 'row' },
+  carouselItem: { width: 160, backgroundColor: COLORS.white, borderRadius: 20, padding: 10, marginRight: 15, elevation: 2 },
+  imagePlaceholder: { width: '140', height: 100, backgroundColor: '#eee', borderRadius: 12 },
+  itemFooter: { marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  itemText: { fontSize: 11, color: COLORS.textSecondary, flex: 1 },
+  shareMiniBtn: { padding: 4 },
+
+  textArea: { backgroundColor: COLORS.white, borderRadius: 20, padding: 20, fontSize: 16, color: COLORS.textMain, textAlignVertical: 'top', elevation: 2, minHeight: 200 },
+  charCount: { alignSelf: 'flex-end', marginTop: 8, color: COLORS.textSecondary, fontSize: 12 },
+  label: { fontSize: 12, fontWeight: 'bold', color: COLORS.textSecondary, marginTop: 25, marginBottom: 12, letterSpacing: 1 },
+  moodGrid: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20 },
+  moodItem: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: COLORS.white, marginRight: 10, marginBottom: 10, borderWidth: 1, borderColor: '#eee' },
+  moodItemActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  moodText: { color: COLORS.textSecondary, fontSize: 14 },
+  moodTextActive: { color: COLORS.white, fontWeight: 'bold' },
+
+  button: { height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', marginVertical: 20, elevation: 5 },
+  buttonText: { fontSize: 18, fontWeight: 'bold' },
+
+  voiceCenter: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 },
+  micButton: { width: 120, height: 120, borderRadius: 60, backgroundColor: COLORS.secondary, alignItems: 'center', justifyContent: 'center', elevation: 10 },
+  micButtonActive: { backgroundColor: COLORS.primary },
+  timer: { fontSize: 32, fontWeight: 'bold', color: COLORS.textMain, marginTop: 20 },
+  voiceInstruction: { textAlign: 'center', color: COLORS.textSecondary, marginTop: 15, fontSize: 15 },
+  miniPlayer: { flexDirection: 'row', marginTop: 30, backgroundColor: COLORS.white, padding: 15, borderRadius: 30, width: '100%', justifyContent: 'space-around', elevation: 2 },
+  footer: { padding: 20 },
+
+  previewContainer: { width: '100%', aspectRatio: 4/3, backgroundColor: COLORS.white, borderRadius: 24, elevation: 3, overflow: 'hidden' },
+  emptyPreview: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+  emptyText: { textAlign: 'center', color: COLORS.textSecondary, lineHeight: 20 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
+  secBtn: { flex: 0.48, height: 50, borderRadius: 25, backgroundColor: COLORS.secondary + '20', alignItems: 'center', justifyContent: 'center' },
+  secBtnText: { color: COLORS.secondary, fontWeight: 'bold' },
+  shortInput: { backgroundColor: COLORS.white, borderRadius: 15, paddingHorizontal: 15, height: 50, elevation: 1 },
+
+  resultCard: { backgroundColor: COLORS.white, borderRadius: 24, overflow: 'hidden', elevation: 5 },
+  resultImagePlaceholder: { width: '100%', aspectRatio: 1, backgroundColor: '#333', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  punchline: { color: COLORS.white, fontSize: 28, fontWeight: '900', textAlign: 'center', textShadowColor: 'black', textShadowRadius: 4, textShadowOffset: {width: 2, height: 2} },
+  transcriptionBox: { padding: 20 },
+  transcriptionText: { fontSize: 15, fontStyle: 'italic', color: COLORS.textMain, lineHeight: 22 },
+  actionGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+  gridBtn: { flex: 0.48, height: 55, borderRadius: 28, alignItems: 'center', justifyContent: 'center', elevation: 3 },
+  gridBtnText: { color: COLORS.white, fontWeight: 'bold' },
+  restartBtn: { marginTop: 20, alignItems: 'center', padding: 15 },
+  restartText: { color: COLORS.textSecondary, fontSize: 16, textDecorationLine: 'underline' }
+});

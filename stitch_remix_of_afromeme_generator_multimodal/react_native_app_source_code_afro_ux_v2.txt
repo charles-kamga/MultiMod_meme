@@ -1,0 +1,316 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  TextInput, 
+  Image, 
+  ActivityIndicator, 
+  PermissionsAndroid, 
+  Platform,
+  Dimensions,
+  SafeAreaView
+} from 'react-native';
+
+/**
+ * CONFIGURATION ET THEME AFRO-UX
+ * Palette mutée et chaleureuse pour un rendu haut de gamme.
+ */
+const API_URL = "http://10.0.2.2:5000/api";
+const COLORS = {
+  background: '#FAF6F0',
+  primary: '#C84B31', // Terracotta
+  secondary: '#1B4232', // Vert Forêt
+  accent: '#F4A261', // Ocre
+  textMain: '#1A1A1A',
+  textSecondary: '#64748B',
+  white: '#FFFFFF',
+  cardShadow: 'rgba(0,0,0,0.05)',
+};
+
+const { width } = Dimensions.get('window');
+
+// --- COMPOSANTS PARTAGÉS ---
+
+const AfroButton = ({ title, onPress, color = COLORS.primary, icon, variant = 'solid' }) => (
+  <TouchableOpacity 
+    style={[
+      styles.button, 
+      { backgroundColor: variant === 'solid' ? color : 'transparent', borderWidth: variant === 'outline' ? 2 : 0, borderColor: color }
+    ]} 
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    <Text style={[styles.buttonText, { color: variant === 'solid' ? COLORS.white : color }]}>{title}</Text>
+  </TouchableOpacity>
+);
+
+const Header = ({ title, subtitle, showAvatar = false, onBack }) => (
+  <View style={styles.headerContainer}>
+    {onBack && (
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
+    )}
+    <View style={styles.headerTextSection}>
+      <Text style={styles.headerTitle}>{title}</Text>
+      {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
+    </View>
+    {showAvatar && (
+      <View style={styles.avatarContainer}>
+        <View style={styles.avatarPlaceholder} />
+      </View>
+    )}
+  </View>
+);
+
+// --- ÉCRANS ---
+
+/**
+ * SCREEN: AuthScreen (Connexion au Kwatt)
+ */
+export const AuthScreen = ({ navigation }) => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.authCenter}>
+        <View style={styles.authLogo}>
+           <Text style={{fontSize: 40}}>✨</Text>
+        </View>
+        <Text style={styles.headerTitle}>Bienvenue au Kwatt</Text>
+        <Text style={styles.headerSubtitle}>Connecte-toi pour créer tes mèmes légendaires.</Text>
+        
+        <View style={styles.socialButtons}>
+           <AfroButton title="Continuer avec Google" variant="outline" color={COLORS.textSecondary} onPress={() => {}} />
+           <AfroButton title="Continuer avec Apple" color="#1A1A1A" onPress={() => {}} />
+        </View>
+        
+        <View style={styles.divider}>
+           <View style={styles.line} /><Text style={styles.dividerText}>OU</Text><View style={styles.line} />
+        </View>
+        
+        <TextInput style={styles.shortInput} placeholder="Email" />
+        <TextInput style={styles.shortInput} placeholder="Mot de passe" secureTextEntry />
+        
+        <AfroButton title="Se connecter" onPress={() => navigation.navigate('Home')} />
+        <TouchableOpacity><Text style={styles.linkText}>Crée un compte ici</Text></TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+/**
+ * SCREEN 1: HomeScreen (Dashboard Afro-Vibe)
+ */
+export const HomeScreen = ({ navigation }) => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Header 
+          title="Akié ! Quel est le ndem du jour ?" 
+          subtitle="Laisse ta créativité parler pour le kwatt."
+          showAvatar={true}
+        />
+        
+        <View style={styles.cardSection}>
+          <TouchableOpacity 
+            style={[styles.mainCard, { borderLeftColor: COLORS.primary }]}
+            onPress={() => navigation.navigate('Context')}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: COLORS.primary + '20' }]}>
+               <Text style={{fontSize: 24}}>📄</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Context Reader</Text>
+              <Text style={styles.cardDesc}>Colle les discussions du kwatt pour créer un meme de clash ou de ndolo.</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.mainCard, { borderLeftColor: COLORS.secondary }]}
+            onPress={() => navigation.navigate('Voice')}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: COLORS.secondary + '20' }]}>
+               <Text style={{fontSize: 24}}>🎤</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Voice-to-Meme</Text>
+              <Text style={styles.cardDesc}>Enregistre ta voix ou un audio pour le transformer en punchline imagée.</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.mainCard, { borderLeftColor: COLORS.accent }]}
+            onPress={() => navigation.navigate('Remixer')}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: COLORS.accent + '20' }]}>
+               <Text style={{fontSize: 24}}>📷</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Status Remixer</Text>
+              <Text style={styles.cardDesc}>Prends une photo ou upload une image pour lui donner un style unique.</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.recentSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Mèmes Récents</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Gallery')}><Text style={{color: COLORS.primary}}>Voir tout</Text></TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carousel}>
+            {[1, 2, 3].map((item) => (
+              <View key={item} style={styles.carouselItem}>
+                <View style={styles.imagePlaceholder} />
+                <View style={styles.itemFooter}>
+                  <Text style={styles.itemText}>"Le ndem de la semaine..."</Text>
+                  <TouchableOpacity style={styles.shareMiniBtn}>
+                     <Text style={{fontSize: 12}}>↗️</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+/**
+ * SCREEN: GalleryScreen (La Galerie du Kwatt)
+ */
+export const GalleryScreen = ({ navigation }) => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header title="La Galerie du Kwatt" onBack={() => navigation.goBack()} />
+      <View style={styles.filterRow}>
+         <TouchableOpacity style={[styles.filterChip, styles.filterChipActive]}><Text style={styles.filterTextActive}>Tous</Text></TouchableOpacity>
+         <TouchableOpacity style={styles.filterChip}><Text style={styles.filterText}>Mes Créations</Text></TouchableOpacity>
+         <TouchableOpacity style={styles.filterChip}><Text style={styles.filterText}>Favoris</Text></TouchableOpacity>
+      </View>
+      <ScrollView contentContainerStyle={styles.galleryGrid}>
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <View key={i} style={styles.galleryCard}>
+            <View style={styles.galleryThumb} />
+            <Text style={styles.galleryTitle}>Mème #{i}</Text>
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+/**
+ * SCREEN: ProfileScreen (Mon Profil Afro-Vibe)
+ */
+export const ProfileScreen = ({ navigation }) => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header title="Mon Profil" onBack={() => navigation.goBack()} />
+      <ScrollView contentContainerStyle={styles.scrollPadding}>
+        <View style={styles.profileHeader}>
+          <View style={styles.largeAvatar} />
+          <Text style={styles.profileName}>Le Ndoki Master</Text>
+          <Text style={styles.profileBio}>Créateur de punchlines depuis 237</Text>
+        </View>
+        
+        <View style={styles.statsRow}>
+           <View style={styles.statBox}><Text style={styles.statVal}>1.2k</Text><Text style={styles.statLab}>Mèmes</Text></View>
+           <View style={styles.statBox}><Text style={styles.statVal}>8.4k</Text><Text style={styles.statLab}>Partages</Text></View>
+        </View>
+
+        <View style={styles.menuList}>
+           {['Mes paramètres', 'Préférences de langue', 'Centre d\'aide', 'Déconnexion'].map(item => (
+             <TouchableOpacity key={item} style={styles.menuItem}>
+                <Text style={styles.menuItemText}>{item}</Text>
+                <Text style={styles.arrow}>></Text>
+             </TouchableOpacity>
+           ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+// ... (Les autres écrans Context, Voice, Remixer, Result restent identiques)
+
+// --- STYLES (Mise à jour avec nouveaux composants) ---
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.background },
+  scrollPadding: { padding: 20 },
+  headerContainer: { paddingHorizontal: 20, paddingTop: 20, pb: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerTextSection: { flex: 1 },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.textMain, fontFamily: 'serif' },
+  headerSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginTop: 4 },
+  avatarContainer: { width: 45, height: 45, borderRadius: 22.5, backgroundColor: COLORS.white, elevation: 4, overflow: 'hidden' },
+  avatarPlaceholder: { flex: 1, backgroundColor: COLORS.accent },
+  backButton: { marginRight: 15, padding: 5 },
+  backButtonText: { fontSize: 24, color: COLORS.textMain },
+  
+  cardSection: { padding: 20 },
+  mainCard: { 
+    flexDirection: 'row', 
+    backgroundColor: COLORS.white, 
+    borderRadius: 24, 
+    padding: 20, 
+    marginBottom: 16, 
+    borderLeftWidth: 6,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  iconCircle: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
+  cardContent: { marginLeft: 15, flex: 1 },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.textMain },
+  cardDesc: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
+
+  recentSection: { paddingLeft: 20, marginBottom: 30 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingRight: 20, alignItems: 'center', marginBottom: 15 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.textMain },
+  carousel: { flexDirection: 'row' },
+  carouselItem: { width: 160, backgroundColor: COLORS.white, borderRadius: 20, padding: 10, marginRight: 15, elevation: 2 },
+  imagePlaceholder: { width: '100%', height: 100, backgroundColor: '#eee', borderRadius: 12 },
+  itemFooter: { marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  itemText: { fontSize: 11, color: COLORS.textSecondary, flex: 1 },
+  shareMiniBtn: { padding: 4 },
+
+  authCenter: { flex: 1, justifyContent: 'center', padding: 30, alignItems: 'center' },
+  authLogo: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  socialButtons: { width: '100%', marginTop: 20 },
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 25 },
+  line: { flex: 1, height: 1, backgroundColor: '#ddd' },
+  dividerText: { marginHorizontal: 10, color: COLORS.textSecondary },
+  linkText: { color: COLORS.primary, marginTop: 15, fontWeight: 'bold' },
+  shortInput: { backgroundColor: COLORS.white, borderRadius: 15, paddingHorizontal: 15, height: 55, width: '100%', marginBottom: 15, elevation: 1 },
+
+  filterRow: { flexDirection: 'row', padding: 20 },
+  filterChip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, backgroundColor: COLORS.white, marginRight: 10 },
+  filterChipActive: { backgroundColor: COLORS.primary },
+  filterText: { color: COLORS.textSecondary },
+  filterTextActive: { color: COLORS.white, fontWeight: 'bold' },
+  galleryGrid: { padding: 15, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  galleryCard: { width: '48%', backgroundColor: COLORS.white, borderRadius: 20, padding: 10, marginBottom: 15 },
+  galleryThumb: { width: '100%', aspectRatio: 1, backgroundColor: '#eee', borderRadius: 12 },
+  galleryTitle: { marginTop: 8, fontSize: 13, fontWeight: 'bold' },
+
+  profileHeader: { alignItems: 'center', marginTop: 20 },
+  largeAvatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: COLORS.accent },
+  profileName: { fontSize: 24, fontWeight: 'bold', marginTop: 15 },
+  profileBio: { color: COLORS.textSecondary, marginTop: 5 },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 30, width: '100%' },
+  statBox: { alignItems: 'center' },
+  statVal: { fontSize: 20, fontWeight: 'bold' },
+  statLab: { fontSize: 12, color: COLORS.textSecondary },
+  menuList: { width: '100%', backgroundColor: COLORS.white, borderRadius: 24, padding: 10 },
+  menuItem: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  menuItemText: { fontSize: 16 },
+
+  button: { height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', marginVertical: 10, elevation: 5, width: '100%' },
+  buttonText: { fontSize: 18, fontWeight: 'bold' },
+  // ... (Styles restants identiques)
+});

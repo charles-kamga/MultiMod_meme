@@ -1,0 +1,156 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .grain-overlay {
+            position: relative;
+        }
+        .grain-overlay::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            background-image: url("https://www.transparenttextures.com/patterns/p6.png");
+            opacity: 0.03;
+        }
+        .meme-text-shadow {
+            text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000, 0px 4px 10px rgba(0,0,0,0.5);
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+<title>Générateur de Memes - Résultat</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md text-body-md min-h-screen overflow-x-hidden">
+<!-- Top App Bar (Shared Component Logic) -->
+<header class="fixed top-0 w-full z-50 bg-background flex flex-row justify-between items-center px-margin-horizontal pt-xs pb-xs border-b border-surface-variant/20 h-16"><a href="{{DATA:SCREEN:SCREEN_11}}" class="mr-xs hover:opacity-80 transition-transform active:scale-95 duration-150 cursor-pointer"><span class="material-symbols-outlined text-primary">arrow_back</span></a>
+<div class="flex items-center gap-xs">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-primary-container/10 border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="A portrait of a stylish user with traditional African intricate braided patterns in their hair, set against a soft ivory background with warm terracotta lighting accents. The style is professional and modern, reflecting a high-end Afro-UX aesthetic with clean lines and soft depth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2P0tbnOMjVfRo6khMxbbZ7hoTqZ-vwSaFhvZHos-4O5JvkgDdoGEqxmX-yE3kQGHjO-Omqbqekwv49nraqKGDtA5IHxX2ncG3FLk0DC6KeTk7wWmSjdwKtd_wT47XdwoXTSI1W4_Zbhmq7JwrYJK87DFynpLZJBuwFkl6e6NV77lGCQ6R4PLePR9m2T4vRO9plY1RFJv9iy6U_aOqTQ3co4TpNeFZZpkJ13olCCnXhSTToYhipSdIKWbxj5z78rG8ACrph-Sx4tdW">
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Akié ! Quel est le ndem du jour ?</h1>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary hover:opacity-80 transition-transform active:scale-95 duration-150 cursor-pointer">settings</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-24 pb-32 px-margin-horizontal max-w-[720px] mx-auto">
+<!-- Result Presentation Section -->
+<section class="space-y-md">
+<!-- The Meme Card -->
+<div class="bg-surface-container-lowest rounded-lg overflow-hidden shadow-[0_4px_12px_rgba(200,75,49,0.05)] grain-overlay border border-surface-variant/30 animate-float">
+<div class="relative w-full aspect-square md:aspect-video flex items-center justify-center bg-inverse-surface">
+<img class="w-full h-full object-cover opacity-90" data-alt="A cinematic photo of a surprised young man in Douala, Cameroon, wearing a colorful modern shirt with traditional embroidery. He is looking at his phone with wide eyes in a crowded local market setting. The lighting is warm and golden-hour style, with high-end photographic quality and a vibrant palette of rainforest green and terracotta. Modern Afro-futurism aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuzJ0yBzNo2mMvD2Zciqv0f76ixwoO9fiDMNm-YcemwPSDfEeePr-aPxR-zB8iIuFfdsnVYxHmgengdRT6M6avNSXeY4hHpM9f422uJBsDlWvOtn-rpQHpVkRfcuxtpdaBQgSY4W07sN-6-pT1TnaF14u1HSLWaFqpvyXP52kIghavxZg2IhY3OyGKai29ZZBZguIpvC7LiSXhUuJA1ESDv5WoG9F7q6Ik5gIkzpPoYFBXUp-BO8U1Yb4H5eYLynngnprlNLHzNj8C">
+<!-- Meme Text Overlays -->
+<div class="absolute inset-x-0 top-6 px-sm text-center">
+<span class="uppercase font-extrabold text-white text-[28px] md:text-[40px] leading-none meme-text-shadow tracking-wider">QUAND TU VOIS</span>
+</div>
+<div class="absolute inset-x-0 bottom-6 px-sm text-center">
+<span class="uppercase font-extrabold text-white text-[28px] md:text-[40px] leading-none meme-text-shadow tracking-wider">LE NDEM ARRIVER</span>
+</div>
+</div>
+</div>
+<!-- Transcription Area (Audio Source) -->
+<div class="bg-white p-sm rounded-lg border border-surface-variant shadow-sm space-y-xs">
+<div class="flex items-center gap-xs text-secondary">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+<span class="font-label-lg text-label-lg">Transcription de l'audio</span>
+</div>
+<p class="text-on-surface-variant font-body-md text-body-md italic leading-relaxed">
+                    "Vraiment, Akié ! On m'avait dit que le gars là était fort, mais je ne savais pas que son ndem pouvait dépasser mon entendement comme ça..."
+                </p>
+</div>
+</section>
+<!-- Action Grid -->
+<section class="mt-lg grid grid-cols-1 md:grid-cols-2 gap-sm">
+<!-- Share WhatsApp -->
+<button class="flex items-center justify-center gap-xs bg-secondary text-white rounded-lg h-14 hover:opacity-90 active:scale-95 transition-all shadow-md group">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform">share</span>
+<span class="font-label-lg text-label-lg">Partager sur WhatsApp</span>
+</button>
+<!-- Download -->
+<button class="flex items-center justify-center gap-xs bg-primary text-white rounded-lg h-14 hover:opacity-90 active:scale-95 transition-all shadow-md group">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform">download</span>
+<span class="font-label-lg text-label-lg">Télécharger dans la Galerie</span>
+</button>
+<!-- Restart -->
+<a href="{{DATA:SCREEN:SCREEN_11}}" class="md:col-span-2 flex items-center justify-center gap-xs bg-transparent border-2 border-primary text-primary rounded-lg h-14 hover:bg-primary/5 active:scale-95 transition-all font-label-lg text-label-lg"><span class="material-symbols-outlined">restart_alt</span>Recommencer</a>
+</section>
+<!-- Suggestions Bento Section -->
+<section class="mt-xl space-y-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Effets populaires</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-xs">
+<div class="bg-secondary-container/30 h-24 rounded-lg flex flex-col items-center justify-center p-xs border border-secondary/10 hover:border-secondary transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-lg group-hover:scale-110 transition-transform">filter_vintage</span>
+<span class="font-label-sm text-label-sm mt-xs">Vintage B&amp;W</span>
+</div>
+<div class="bg-tertiary-fixed h-24 rounded-lg flex flex-col items-center justify-center p-xs border border-tertiary/10 hover:border-tertiary transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-tertiary text-lg group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm mt-xs">Premium Glow</span>
+</div>
+<div class="bg-outline-variant/30 h-24 rounded-lg flex flex-col items-center justify-center p-xs border border-outline/10 hover:border-outline transition-colors cursor-pointer group col-span-2 md:col-span-1">
+<span class="material-symbols-outlined text-on-surface-variant text-lg group-hover:scale-110 transition-transform">auto_awesome</span>
+<span class="font-label-sm text-label-sm mt-xs">Auto-Glow</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Shared Component Logic) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-margin-horizontal py-sm bg-surface shadow-md rounded-t-lg">
+<a href="{{DATA:SCREEN:SCREEN_11}}" class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant rounded-full transition-colors cursor-pointer"><span class="material-symbols-outlined">add_photo_alternate</span><span class="font-label-sm text-label-sm mt-1">Studio</span></a>
+<a href="{{DATA:SCREEN:SCREEN_12}}" class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant rounded-full transition-colors cursor-pointer"><span class="material-symbols-outlined">grid_view</span><span class="font-label-sm text-label-sm mt-1">Galerie</span></a>
+<!-- Active Tab: Ndèms (The Results) -->
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-sm py-xs scale-90 duration-200 cursor-default">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm mt-1">Ndèms</span>
+</div>
+<a href="{{DATA:SCREEN:SCREEN_14}}" class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant rounded-full transition-colors cursor-pointer"><span class="material-symbols-outlined">person</span><span class="font-label-sm text-label-sm mt-1">Profil</span></a>
+</nav>
+<!-- FAB Suppression Rule Applied (Not rendered on result screen) -->
+<script>
+        // Micro-interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-95');
+            });
+        });
+
+        // Simple animation for the "Share" button hover
+        const shareBtn = document.querySelector('.group');
+        shareBtn.addEventListener('mouseenter', () => {
+            const icon = shareBtn.querySelector('.material-symbols-outlined');
+            icon.classList.add('animate-bounce');
+            setTimeout(() => icon.classList.remove('animate-bounce'), 1000);
+        });
+    </script>
+
+
+
+
+</body></html>

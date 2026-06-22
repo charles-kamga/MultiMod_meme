@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Générateur Multimodal de Memes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#274e3d",
+                    "secondary-container": "#c1ecd5",
+                    "on-background": "#1c1b1b",
+                    "on-surface": "#1c1b1b",
+                    "outline": "#8c716b",
+                    "inverse-primary": "#ffb4a4",
+                    "background": "#FAF6F0",
+                    "on-secondary-fixed": "#002115",
+                    "secondary-fixed-dim": "#a6d0ba",
+                    "on-surface-variant": "#58413c",
+                    "inverse-on-surface": "#f3f0ef",
+                    "on-primary-fixed": "#3e0500",
+                    "surface": "#fcf9f8",
+                    "on-secondary-container": "#456c5a",
+                    "inverse-surface": "#313030",
+                    "surface-bright": "#fcf9f8",
+                    "tertiary-container": "#a86328",
+                    "surface-container": "#f0eded",
+                    "on-tertiary-container": "#fffafa",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#2f1400",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e5e2e1",
+                    "surface-tint": "#aa361e",
+                    "tertiary": "#8a4b10",
+                    "primary-container": "#c84b31",
+                    "surface-container-low": "#f6f3f2",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#c1ecd5",
+                    "surface-variant": "#e5e2e1",
+                    "outline-variant": "#e0bfb9",
+                    "on-primary": "#ffffff",
+                    "primary": "#a6331b",
+                    "surface-dim": "#dcd9d9",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#ffdad3",
+                    "secondary": "#3f6654",
+                    "on-primary-container": "#fffbff",
+                    "on-tertiary-fixed-variant": "#6f3800",
+                    "surface-container-high": "#eae7e7",
+                    "tertiary-fixed": "#ffdcc4",
+                    "tertiary-fixed-dim": "#ffb780",
+                    "primary-fixed-dim": "#ffb4a4",
+                    "on-primary-fixed-variant": "#891e07"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "16px",
+                    "xl": "48px",
+                    "base": "4px",
+                    "xs": "8px",
+                    "gutter": "12px",
+                    "md": "24px",
+                    "margin-horizontal": "20px",
+                    "lg": "32px"
+            },
+            "fontFamily": {
+                    "body-md": ["Plus Jakarta Sans"],
+                    "display-lg": ["Be Vietnam Pro"],
+                    "label-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Be Vietnam Pro"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Be Vietnam Pro"],
+                    "headline-lg-mobile": ["Be Vietnam Pro"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "700"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.5px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #FAF6F0;
+            color: #1c1b1b;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .grain-overlay {
+            position: relative;
+        }
+        .grain-overlay::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("https://www.transparenttextures.com/patterns/fine-grained.png");
+            opacity: 0.02;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .custom-shadow-l1 {
+            box-shadow: 0 4px 12px rgba(200, 75, 49, 0.05);
+        }
+        .custom-shadow-l2 {
+            box-shadow: 0 8px 24px rgba(26, 26, 26, 0.1);
+        }
+        .asymmetric-card {
+            border-top-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="bg-background fixed top-0 w-full z-50 flex flex-row justify-between items-center px-margin-horizontal pt-xs pb-xs w-full">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+<img class="w-full h-full object-cover" data-alt="A stylized portrait of a smiling young African creative professional with traditional geometric face paint patterns, shot in soft natural lighting against a minimalist ivory background. The aesthetic is modern Afro-UX, using warm terracotta tones and rainforest green accents in the clothing. High-resolution digital photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKiI6LdnqROg5e8FAMqzACW3OcS49FYtWeSci1aq1dna1vtNo3W2qsEAQ2ipJdAprt0ICGhbghYU6LOJu8mU_kDd496yj0dcas2Nzm3CnCHR9JeJ7AoqQ4ZJ1VP9iJnj4B6Wp5nuKtFZVXflNlzJhdUlET5YaPnHP3qvoz24cnThyw9SHtx-ayEJTawr6JtgHCzl6jf4CJGLdLLbUAuPqmqcu5Y-Dt8sUO14JwZELVOvVF9h8ZVWyQjAcrXLkUxdcBaYg7WVvs0nh3"/>
+</div>
+<div class="flex flex-col">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Akié ! Quel est le ndem du jour ?</h1>
+<p class="font-label-lg text-label-lg text-on-surface-variant">Laisse ta créativité parler pour le kwatt.</p>
+</div>
+</div>
+<button class="hover:opacity-80 scale-95 transition-transform duration-150 p-xs">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px;">settings</span>
+</button>
+</header>
+<main class="mt-24 px-margin-horizontal pb-32">
+<!-- Main Action Section: Bento-ish Grid -->
+<section class="grid grid-cols-1 gap-md">
+<!-- Context Reader Card -->
+<div class="grain-overlay relative overflow-hidden bg-white rounded-lg p-md custom-shadow-l1 flex flex-col gap-sm border-l-8 border-primary-container group active:scale-[0.98] transition-transform duration-200">
+<div class="flex justify-between items-start">
+<div class="bg-primary-fixed p-sm rounded-full">
+<span class="material-symbols-outlined text-primary text-[32px]">description</span>
+</div>
+<span class="bg-primary-container text-white px-sm py-xs rounded-full font-label-sm text-label-sm">Context Reader</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Colle les discussions</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Transforme les screens du kwatt en memes de clash ou de ndolo légendaires.</p>
+</div>
+<div class="mt-base flex justify-end">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<!-- Voice-to-Meme Card -->
+<div class="grain-overlay relative overflow-hidden bg-white rounded-lg p-md custom-shadow-l1 flex flex-col gap-sm border-t-8 border-secondary group active:scale-[0.98] transition-transform duration-200">
+<div class="bg-secondary-fixed p-sm rounded-full w-fit">
+<span class="material-symbols-outlined text-secondary text-[28px]">mic</span>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg text-on-surface mb-xs font-bold">Voice-to-Meme</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Audio -&gt; Punchline imagée.</p>
+</div>
+</div>
+<!-- Status Remixer Card -->
+<div class="grain-overlay relative overflow-hidden bg-white rounded-lg p-md custom-shadow-l1 flex flex-col gap-sm border-t-8 border-tertiary-container group active:scale-[0.98] transition-transform duration-200">
+<div class="bg-tertiary-fixed p-sm rounded-full w-fit">
+<span class="material-symbols-outlined text-tertiary text-[28px]">photo_camera</span>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg text-on-surface mb-xs font-bold">Status Remixer</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Upload &amp; Remix unique.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Horizontal Carousel: Mèmes Récents -->
+<section class="mt-xl">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Mèmes Récents du Kwatt</h3>
+<button class="text-primary font-label-lg text-label-lg hover:underline">Voir tout</button>
+</div>
+<div class="flex overflow-x-auto gap-md pb-xs no-scrollbar snap-x">
+<!-- Meme 1 -->
+<div class="flex-none w-64 snap-start">
+<div class="bg-white rounded-lg overflow-hidden custom-shadow-l1 h-80 flex flex-col">
+<div class="h-48 w-full bg-surface-container relative">
+<img class="w-full h-full object-cover" data-alt="A humorous digital meme layout featuring a vibrant rainforest green background and bold terracotta typography. The central image shows a stylized 3D character in a playful pose typical of Cameroonian street culture. The lighting is bright and energetic, with organic geometric patterns framing the scene. Premium Afro-UX design aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3q1dA685vvb53LRmksexwYTTrxPojZn7mH5f4kPfIL6cZDfjvFrXls6nrnc9ze_80TBEnqC-YGqN17d1BNEtWtumuaHG0JiBxeqrWxUttZG6X-QWt48468M79QgOlYxq6wD6ONBAL4r3BJghODT0SgLxxk34iXMRlnr2fgPIDjYMRHeJwRChNqMVFhhfe1o569tejsEEnAPV3vHhV_foQwT9mJ7bYlyLdCAcow3MuEduQUcVcB-uyfYf7lyIWgiv_CJTGxr38iR3R"/>
+<div class="absolute top-sm left-sm bg-black/50 text-white px-xs py-[2px] rounded-full text-[10px] backdrop-blur-md">Trending 🔥</div>
+</div>
+<div class="p-sm flex flex-col justify-between flex-grow">
+<p class="font-label-lg text-label-lg line-clamp-2 italic">"Quand tu dis que tu arrives et tu es encore au lit..."</p>
+<div class="flex justify-between items-center mt-xs">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-white bg-secondary flex items-center justify-center text-[10px] text-white">MK</div>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-primary flex items-center justify-center text-[10px] text-white">JD</div>
+</div>
+<button class="p-xs bg-surface-container-highest rounded-full flex items-center justify-center hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Meme 2 -->
+<div class="flex-none w-64 snap-start">
+<div class="bg-white rounded-lg overflow-hidden custom-shadow-l1 h-80 flex flex-col">
+<div class="h-48 w-full bg-surface-container relative">
+<img class="w-full h-full object-cover" data-alt="A modern meme design with a soft ivory background and deep charcoal text elements. The focal point is an artistic, high-contrast illustration of two characters engaging in a 'clash' using stylized speech bubbles filled with abstract patterns. The overall mood is sophisticated yet witty, adhering to a contemporary Afro-futurist graphic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnRA_D9_xMcNdkhIJPvCLwOKZDbscJcapF6Svs5mnmNwiqDfnA3_QTzLdAemz1rDtW3Dgqem-6F2Yd7dADhb0GmpmNpaQFHzvn_dQQw73ZitzjEjW9Wnu5oI0pdXcNL5nbHU4OxJnt6H4CSb7znOGdYee7ZKma_L_ZGxvHm508R85Fui_OLj49kv33YpP3W2zF2MYM-DeM19h840_WEf-xSRB71Qzp4LFhLOIIIdKb3iqGQ3ghbVrWfrrHYnDOoRnwevCE-89CECPW"/>
+</div>
+<div class="p-sm flex flex-col justify-between flex-grow">
+<p class="font-label-lg text-label-lg line-clamp-2 italic">"Le ndem est fort cette semaine ooh!"</p>
+<div class="flex justify-between items-center mt-xs">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-white bg-tertiary flex items-center justify-center text-[10px] text-white">AB</div>
+</div>
+<button class="p-xs bg-surface-container-highest rounded-full flex items-center justify-center hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Meme 3 -->
+<div class="flex-none w-64 snap-start">
+<div class="bg-white rounded-lg overflow-hidden custom-shadow-l1 h-80 flex flex-col">
+<div class="h-48 w-full bg-surface-container relative">
+<img class="w-full h-full object-cover" data-alt="A colorful, high-energy digital artwork representing a cultural meme. Vibrant rainforest green and rich ochre blocks frame a scene of urban life in Douala, depicted with organic brushstrokes and tactile grain textures. The lighting mimics a warm sunset. Elegant typography anchors the top and bottom of the composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7MOW56lrpjpIaNqDf4kz_DsG8ecwMLYEtOcpt61LijU6FELRIeTecTgyTsUpBY1BVMWUdT-PDkCY15rxkb654NQswDsE6ktpZm5IfLFOU8P3xYWg2z0EhhvUbVgdms_aDuNDLFuv1x1P81R7KULEjDHZpZvGsg92VPGNafX4wl81i6yizHqDv36ghgVXgwHmXmSWnEcPUIwTlDr9im3yWZuy65uca73zWtgO52IKr4tCWaW2WEN7l66bwT0wO5eFyVeQsIBubo157"/>
+</div>
+<div class="p-sm flex flex-col justify-between flex-grow">
+<p class="font-label-lg text-label-lg line-clamp-2 italic">"Moi face au miondo de midi..."</p>
+<div class="flex justify-between items-center mt-xs">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-white bg-secondary flex items-center justify-center text-[10px] text-white">LL</div>
+</div>
+<button class="p-xs bg-surface-container-highest rounded-full flex items-center justify-center hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB: Create New -->
+<button class="fixed right-6 bottom-24 w-16 h-16 bg-primary rounded-full custom-shadow-l2 flex items-center justify-center text-white z-50 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-size: 32px;">add</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-margin-horizontal py-sm bg-surface rounded-t-lg shadow-md">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-sm py-xs Active: scale-90 duration-200">
+<span class="material-symbols-outlined">add_photo_alternate</span>
+<span class="font-label-sm text-label-sm mt-1">Studio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-sm text-label-sm mt-1">Galerie</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-sm text-label-sm mt-1">Ndèms</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profil</span>
+</button>
+</nav>
+<script>
+        // Micro-interactions for horizontal scroll
+        const scrollContainer = document.querySelector('.snap-x');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        scrollContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - scrollContainer.offsetLeft;
+            scrollLeft = scrollContainer.scrollLeft;
+        });
+        scrollContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+        });
+        scrollContainer.addEventListener('mouseup', () => {
+            isDown = false;
+        });
+        scrollContainer.addEventListener('mousemove', (e) => {
+            if(!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scrollContainer.offsetLeft;
+            const walk = (x - startX) * 2;
+            scrollContainer.scrollLeft = scrollLeft - walk;
+        });
+
+        // Toggle Active State Logic
+        const navButtons = document.querySelectorAll('nav button');
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navButtons.forEach(b => {
+                    b.className = "flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant";
+                });
+                btn.className = "flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-sm py-xs Active: scale-90 duration-200";
+            });
+        });
+    </script>
+</body></html>

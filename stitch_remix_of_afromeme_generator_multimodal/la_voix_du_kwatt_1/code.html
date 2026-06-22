@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>La Voix du Kwatt - Générateur de Memes</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#274e3d",
+                        "secondary-container": "#c1ecd5",
+                        "on-background": "#1c1b1b",
+                        "on-surface": "#1c1b1b",
+                        "outline": "#8c716b",
+                        "inverse-primary": "#ffb4a4",
+                        "background": "#fcf9f8",
+                        "on-secondary-fixed": "#002115",
+                        "secondary-fixed-dim": "#a6d0ba",
+                        "on-surface-variant": "#58413c",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary-fixed": "#3e0500",
+                        "surface": "#fcf9f8",
+                        "on-secondary-container": "#456c5a",
+                        "inverse-surface": "#313030",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary-container": "#a86328",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-container": "#fffafa",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#2f1400",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e5e2e1",
+                        "surface-tint": "#aa361e",
+                        "tertiary": "#8a4b10",
+                        "primary-container": "#c84b31",
+                        "surface-container-low": "#f6f3f2",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#c1ecd5",
+                        "surface-variant": "#e5e2e1",
+                        "outline-variant": "#e0bfb9",
+                        "on-primary": "#ffffff",
+                        "primary": "#a6331b",
+                        "surface-dim": "#dcd9d9",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#ffdad3",
+                        "secondary": "#3f6654",
+                        "on-primary-container": "#fffbff",
+                        "on-tertiary-fixed-variant": "#6f3800",
+                        "surface-container-high": "#eae7e7",
+                        "tertiary-fixed": "#ffdcc4",
+                        "tertiary-fixed-dim": "#ffb780",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "on-primary-fixed-variant": "#891e07"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "xl": "48px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "gutter": "12px",
+                        "md": "24px",
+                        "margin-horizontal": "20px",
+                        "lg": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Be Vietnam Pro"],
+                        "label-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "700"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.5px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .organic-pulse {
+            animation: pulse-ring 2.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.85); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 0.4; }
+            100% { transform: scale(0.85); opacity: 0.8; }
+        }
+        .recording-glow {
+            filter: drop-shadow(0 0 15px rgba(166, 51, 27, 0.4));
+        }
+        .grain-overlay {
+            position: relative;
+        }
+        .grain-overlay::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col grain-overlay">
+<!-- Top AppBar (Back Navigation & Identity) -->
+<header class="flex flex-row justify-between items-center px-margin-horizontal pt-sm pb-sm w-full sticky top-0 bg-background/80 backdrop-blur-md z-50">
+<button aria-label="Retour" class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">La Voix du Kwatt</h1>
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional close-up of a stylish African user profile avatar. The person has modern braided hair and is wearing a high-fashion garment with subtle traditional patterns. The lighting is soft and warm, set against an Ivory-toned background that matches the Afro-UX design system. The image has a clean, premium digital aesthetic with a soft focus on the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDATMe1Bu3OBPBl0bI7Hyih9ynhJBxl_baBebaYEchwKlTK1pZqhQZqdxs1rBohEHYKeq57HBLT1QHniHyD3rp0NsqfPRUbQGoiZYwwAjWeE1JTt88BlCFEDv3yD7PqCA6-n8dT4WLDCIC2hAduwavHTtuToMDAYUogj9lNOueB1Zp79WM2wwJC6GVZuwqvb0KHuAM4uflcsLUHXiS8KLE_6rJ1QvDffWjt88pPIFPuT14COkSIu-i7mUb-00HaqY3FhedkmV3w1AXU"/>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-margin-horizontal">
+<!-- Central Zone: Microphone Section -->
+<section class="relative flex flex-col items-center justify-center w-full max-w-md aspect-square" id="recording-zone">
+<!-- Waveform Animation Placeholder (State: Ready/Recording) -->
+<div class="absolute inset-0 flex items-center justify-center" id="animation-container">
+
+<!-- Pulse rings for active recording -->
+<div class="hidden absolute inset-0 flex items-center justify-center pointer-events-none" id="visual-feedback">
+<div class="w-64 h-64 rounded-full border-4 border-secondary opacity-20 organic-pulse"></div>
+<div class="w-80 h-80 rounded-full border-2 border-secondary opacity-10 organic-pulse" style="animation-delay: 0.5s"></div>
+</div>
+</div>
+<!-- Huge Circular Mic Button -->
+<button class="relative z-20 w-48 h-48 rounded-full bg-secondary text-on-secondary shadow-lg flex items-center justify-center transition-all active:scale-90 recording-glow" id="mic-button">
+<span class="material-symbols-outlined text-[64px]" data-weight="fill" id="mic-icon">mic</span>
+</button>
+<!-- Recording Timer -->
+<div class="mt-lg font-label-lg text-label-lg text-on-surface-variant tracking-widest opacity-80" id="timer-display">
+                00:00
+            </div>
+</section>
+<!-- Captured State Zone (Hidden by default) -->
+<section class="hidden w-full max-w-md mt-lg space-y-md animate-in fade-in slide-in-from-bottom-4 duration-500" id="captured-zone">
+<div class="bg-surface-container-highest rounded-lg p-sm flex items-center gap-sm shadow-level-1 border border-outline-variant/20">
+<button class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined">play_arrow</span>
+</button>
+<div class="flex-grow">
+<div class="h-1 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/3 rounded-full"></div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors" id="trash-button">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="flex items-center justify-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined animate-spin text-[20px]">sync</span>
+<p class="font-label-lg text-label-lg italic">Transcription IA en attente...</p>
+</div>
+</section>
+<!-- Contextual Help / Tips -->
+<div class="mt-xl text-center px-lg" id="hint-text">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Appuie pour commencer le ndem audio. L'IA s'occupe de transformer ta voix en meme viral.
+            </p>
+</div>
+</main>
+<!-- Footer Submission -->
+<footer class="p-margin-horizontal mb-lg">
+<div class="w-full max-w-md mx-auto hidden" id="footer-actions">
+<button class="w-full h-14 bg-primary text-on-primary rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-sm shadow-md hover:opacity-90 transition-all">
+                Envoyer l'Audio à l'IA
+                <span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</footer>
+<!-- Bottom Navigation Bar (Context: Global Nav) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-margin-horizontal py-sm bg-surface shadow-md rounded-t-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">add_photo_alternate</span>
+<span class="font-label-sm text-label-sm">Studio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-sm text-label-sm">Galerie</span>
+</a>
+<!-- Active Tab: Voice (Ndèms maps to creative stream) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-sm py-xs scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-sm text-label-sm">Ndèms</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-xs hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profil</span>
+</a>
+</nav>
+<script>
+        const micButton = document.getElementById('mic-button');
+        const micIcon = document.getElementById('mic-icon');
+        const visualFeedback = document.getElementById('visual-feedback');
+        const timerDisplay = document.getElementById('timer-display');
+        const capturedZone = document.getElementById('captured-zone');
+        const footerActions = document.getElementById('footer-actions');
+        const hintText = document.getElementById('hint-text');
+        const trashButton = document.getElementById('trash-button');
+
+        let isRecording = false;
+        let timerInterval;
+        let seconds = 0;
+
+        function updateTimer() {
+            seconds++;
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `${mins}:${secs}`;
+        }
+
+        micButton.addEventListener('click', () => {
+            if (!isRecording) {
+                // Start Recording
+                isRecording = true;
+                micIcon.innerText = 'stop';
+                micIcon.classList.add('text-on-primary');
+                micButton.classList.replace('bg-secondary', 'bg-primary');
+                visualFeedback.classList.remove('hidden');
+                
+                seconds = 0;
+                timerDisplay.innerText = '00:00';
+                timerInterval = setInterval(updateTimer, 1000);
+                
+                capturedZone.classList.add('hidden');
+                footerActions.classList.add('hidden');
+                hintText.classList.remove('opacity-0');
+            } else {
+                // Stop Recording
+                isRecording = false;
+                micIcon.innerText = 'mic';
+                micButton.classList.replace('bg-primary', 'bg-secondary');
+                visualFeedback.classList.add('hidden');
+                clearInterval(timerInterval);
+
+                // Show Captured State
+                capturedZone.classList.remove('hidden');
+                footerActions.classList.remove('hidden');
+                hintText.classList.add('opacity-0');
+            }
+        });
+
+        trashButton.addEventListener('click', () => {
+            capturedZone.classList.add('hidden');
+            footerActions.classList.add('hidden');
+            hintText.classList.remove('opacity-0');
+            timerDisplay.innerText = '00:00';
+            seconds = 0;
+        });
+    </script>
+</body></html>

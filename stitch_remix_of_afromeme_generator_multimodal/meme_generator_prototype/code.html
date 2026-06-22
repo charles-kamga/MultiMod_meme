@@ -1,0 +1,222 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bienvenue au Kwatt - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#274e3d",
+                    "inverse-surface": "#313030",
+                    "surface-container-low": "#f6f3f2",
+                    "secondary-fixed": "#c1ecd5",
+                    "surface-bright": "#fcf9f8",
+                    "tertiary-fixed": "#ffdcc4",
+                    "surface-dim": "#dcd9d9",
+                    "on-error-container": "#93000a",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#aa361e",
+                    "on-primary-container": "#fffbff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#2f1400",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#ffb4a4",
+                    "surface-container-highest": "#e5e2e1",
+                    "primary-fixed": "#ffdad3",
+                    "outline-variant": "#e0bfb9",
+                    "on-primary-fixed": "#3e0500",
+                    "secondary": "#3f6654",
+                    "outline": "#8c716b",
+                    "on-background": "#1c1b1b",
+                    "surface-container": "#f0eded",
+                    "on-primary-fixed-variant": "#891e07",
+                    "on-tertiary-fixed-variant": "#6f3800",
+                    "on-tertiary-container": "#fffafa",
+                    "on-surface": "#1c1b1b",
+                    "secondary-container": "#c1ecd5",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#002115",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#456c5a",
+                    "background": "#fcf9f8",
+                    "primary-container": "#c84b31",
+                    "secondary-fixed-dim": "#a6d0ba",
+                    "on-error": "#ffffff",
+                    "primary": "#a6331b",
+                    "on-surface-variant": "#58413c",
+                    "tertiary-fixed-dim": "#ffb780",
+                    "surface": "#fcf9f8",
+                    "primary-fixed-dim": "#ffb4a4",
+                    "surface-container-high": "#eae7e7",
+                    "tertiary-container": "#a86328",
+                    "inverse-on-surface": "#f3f0ef",
+                    "tertiary": "#8a4b10"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "xl": "48px",
+                    "sm": "16px",
+                    "gutter": "12px",
+                    "base": "4px",
+                    "xs": "8px",
+                    "margin-horizontal": "20px",
+                    "lg": "32px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "display-lg": ["Be Vietnam Pro"],
+                    "label-lg": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Be Vietnam Pro"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Be Vietnam Pro"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Be Vietnam Pro"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "700"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.5px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #FAF6F0; /* Soft Ivory Base */
+            color: #1c1b1b;
+            overflow-x: hidden;
+        }
+        .grain-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .organic-shape {
+            border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        }
+        .shadow-afro-sm {
+            box-shadow: 0 4px 12px rgba(200, 75, 49, 0.05);
+        }
+        .shadow-afro-lg {
+            box-shadow: 0 8px 24px rgba(26, 26, 26, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md">
+<div class="grain-overlay"></div>
+<main class="flex-grow flex flex-col items-center justify-center px-margin-horizontal py-xl relative overflow-hidden">
+<!-- Background Atmospheric Element -->
+<div class="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 organic-shape blur-3xl animate-pulse"></div>
+<div class="absolute -bottom-20 -left-20 w-80 h-80 bg-secondary/5 organic-shape blur-3xl"></div>
+<div class="w-full max-w-[440px] z-10">
+<!-- Brand Identity / Header -->
+<div class="text-center mb-lg">
+<div class="inline-flex items-center justify-center w-16 h-16 bg-primary-container rounded-lg mb-sm shadow-afro-lg transform -rotate-3 transition-transform hover:rotate-0 duration-300">
+<span class="material-symbols-outlined text-on-primary text-[32px]" data-icon="auto_awesome" data-weight="fill">auto_awesome</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background tracking-tight mb-xs">
+                    Bienvenue au Kwatt
+                </h1>
+<p class="font-body-md text-on-surface-variant px-sm">
+                    Connecte-toi pour créer tes mèmes légendaires.
+                </p>
+</div>
+<!-- Auth Container -->
+<div class="bg-white rounded-lg shadow-afro-sm p-lg flex flex-col gap-sm border border-surface-variant/30">
+<!-- Social Buttons -->
+<button class="flex items-center justify-center gap-sm bg-white border-2 border-surface-variant hover:bg-surface-container-low transition-all duration-200 h-[56px] rounded-lg group" onclick="window.location.href='{{DATA:SCREEN:SCREEN_9}}'">
+<img class="w-6 h-6" data-alt="The official Google logo in its classic multi-colored aesthetic, set against a clean white circular background. The style is modern, professional, and minimalist, fitting perfectly into a high-end Afro-UX design system. The lighting is soft and even, highlighting the vibrant primary colors of the logo." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAx9ESSEptnxZC4g3WbAmt2344SE85DUke7BYNEv-dEhQbXOaQKE-r464O8ZjG0Y4_DnVWzp7UZdx_YACzoN85RBDGwx2NmJAIVBkfRWjyAZ3-6-9RxNp6rtyXCrCKB1HwDCsilDg9ZWpBxtC5TLWh7L4ra-gIb2HJgtO6aErgC96xuSeytxQC55RkO-n5lJ1kyrN1t0ei9O1EbaDQwgUYI1Xr7hJOo1h2fBe5bVe7gX_Z4jWMekhBeDqutouzXELjKmK8dP_ZjguT">
+<span class="font-label-lg text-label-lg text-on-surface">Continuer avec Google</span>
+</button>
+<button class="flex items-center justify-center gap-sm bg-on-background text-white hover:opacity-90 transition-all duration-200 h-[56px] rounded-lg" onclick="window.location.href='{{DATA:SCREEN:SCREEN_9}}'">
+<span class="material-symbols-outlined text-[24px]" data-icon="apple" data-weight="fill">apps</span>
+<span class="font-label-lg text-label-lg">Continuer avec Apple</span>
+</button>
+<!-- Divider -->
+<div class="flex items-center gap-sm my-sm">
+<div class="flex-grow h-[1px] bg-surface-variant"></div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-widest">ou</span>
+<div class="flex-grow h-[1px] bg-surface-variant"></div>
+</div>
+<!-- Form -->
+<form class="flex flex-col gap-sm" onsubmit="event.preventDefault()">
+<div class="flex flex-col gap-base">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-xs">Email</label>
+<input class="w-full h-[56px] px-sm bg-surface-container-low border-transparent focus:border-primary focus:ring-0 rounded-lg transition-all text-on-surface placeholder:text-outline/60 font-body-md" placeholder="ton-nom@kwatt.cm" type="email">
+</div>
+<div class="flex flex-col gap-base">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-xs">Mot de passe</label>
+<div class="relative">
+<input class="w-full h-[56px] px-sm bg-surface-container-low border-transparent focus:border-primary focus:ring-0 rounded-lg transition-all text-on-surface placeholder:text-outline/60 font-body-md" placeholder="••••••••" type="password">
+<button class="absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex justify-end mb-xs">
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">Mot de passe oublié ?</a>
+</div>
+<button class="w-full bg-primary-container text-on-primary h-[56px] rounded-lg font-label-lg text-label-lg shadow-afro-lg hover:scale-[1.02] active:scale-95 transition-all duration-200" onclick="window.location.href='{{DATA:SCREEN:SCREEN_9}}'">
+                        Se connecter
+                    </button>
+</form>
+</div>
+<!-- Footer Link -->
+<div class="mt-lg text-center">
+<p class="font-body-md text-on-surface-variant">
+                    Pas encore de compte ? 
+                    <a class="text-primary font-label-lg text-label-lg hover:underline decoration-2 underline-offset-4" href="{{DATA:SCREEN:SCREEN_9}}">
+                        Crée un compte ici
+                    </a>
+</p>
+</div>
+</div>
+</main>
+<!-- Illustrative Footer Element -->
+<div class="hidden md:block fixed bottom-0 left-0 right-0 h-32 overflow-hidden pointer-events-none opacity-20">
+<div class="flex justify-around items-end gap-md">
+<div class="w-24 h-48 bg-tertiary organic-shape transform translate-y-24 rotate-12"></div>
+<div class="w-32 h-32 bg-secondary organic-shape transform translate-y-16 -rotate-6"></div>
+<div class="w-40 h-56 bg-primary organic-shape transform translate-y-32 rotate-45"></div>
+<div class="w-28 h-40 bg-secondary-fixed organic-shape transform translate-y-20 -rotate-12"></div>
+</div>
+</div>
+<script>
+        // Simple micro-interaction for organic float effect
+        document.addEventListener('mousemove', (e) => {
+            const shapes = document.querySelectorAll('.organic-shape');
+            const x = (e.clientX / window.innerWidth) - 0.5;
+            const y = (e.clientY / window.innerHeight) - 0.5;
+            
+            shapes.forEach((shape, index) => {
+                const speed = (index + 1) * 10;
+                shape.style.transform = `translate(${x * speed}px, ${y * speed}px) rotate(${index * 15}deg)`;
+            });
+        });
+    </script>
+
+
+</body></html>
