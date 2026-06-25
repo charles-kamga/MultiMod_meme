@@ -25,7 +25,7 @@ import {
   StatusBar
 } from 'react-native';
 
-// On utilise les couleurs du thème défini par Klod (Tâche 1)
+// On utilise les couleurs du thème défini par Klod (Tâche 1).
 import { COLORS } from '../theme/colors'; 
 
 const { width } = Dimensions.get('window');
@@ -77,7 +77,7 @@ const HomeScreen = ({ navigation }: any) => {
           />
         </View>
 
-        {/* Grille des modules multimodaux */}
+        {/* STUDIO GRID : Les 3 portes d'entrée de l'application */}
         <View style={styles.studioGrid}>
           <Text style={styles.sectionTitle}>LABO DE CRÉATION</Text>
           
