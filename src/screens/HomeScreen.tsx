@@ -32,7 +32,7 @@ const { width } = Dimensions.get('window');
 
 // Originalité : Contenu localisé (Le "Kwatt" Spirit)
 const INTRO_CAROUSEL = [
-  { id: '1', title: 'Le Jimpat de l\'IA 🧙‍♂️', text: 'Transforme tes pires clashs WhatsApp en memes légendaires.', color: '#128C7E' },
+  { id: '1', title: 'Le Jimpat de l\'IA 🧙‍♂️', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.', color: '#128C7E' },
   { id: '2', title: 'Mode VOUP VAP 📸', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.', color: '#075E54' },
 ];
 
