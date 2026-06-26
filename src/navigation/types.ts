@@ -15,6 +15,7 @@ export type RootStackParamList = {
     transcription?: string;
     source: 'context' | 'voice' | 'remix';
   };
+  Gallery: undefined;
 };
 
 export type MainTabParamList = {

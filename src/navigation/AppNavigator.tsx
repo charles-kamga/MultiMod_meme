@@ -133,13 +133,6 @@ export const AppNavigator: React.FC = () => (
     <Stack.Screen name="Remixer" component={RemixerScreen} />
     <Stack.Screen name="MemeResult" component={MemeResultScreen} />
     <Stack.Screen name="Gallery" component={GalleryScreen} />
-
-    {/* Résultat */}
-    <Stack.Screen
-      name="MemeResult"
-      component={MemeResultScreen}
-      options={{ animation: 'slide_from_bottom' }}
-    />
   </Stack.Navigator>
 );
 

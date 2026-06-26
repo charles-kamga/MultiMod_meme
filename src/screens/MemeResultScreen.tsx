@@ -40,7 +40,7 @@ interface Props {
 
 const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
   const {meme} = route.params;
-  const viewShotRef = useRef<ViewShot>(null);
+  const viewShotRef = useRef<any>(null);
   const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -128,7 +128,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
         message: meme.punchline || meme.bottomText || '',
         url: uri,
         type: 'image/png',
-        social: Share.Social.WHATSAPP,
+       social: 'whatsapp' as any,
       });
     } catch (e: any) {
       Alert.alert(
