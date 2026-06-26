@@ -1,229 +1,334 @@
-/**
- * ÉCRAN : GalleryScreen — La Galerie du Kwatt
- * Flux des mèmes récents avec filtres (Tous, Mes Créations, Favoris).
- * Inspiré de la maquette `la_galerie_du_kwatt/screen.png` et du code de référence.
- */
-
-import React, { useState } from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
   StyleSheet,
   FlatList,
+  Image,
+  TouchableOpacity,
+  Alert,
+  Platform,
+  StatusBar,
+  ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { RootStackParamList, MainTabParamList } from '../navigation/types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { Header } from '../components/SharedComponents';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useFocusEffect} from '@react-navigation/native';
+import type {MemeResult} from './MemeResultScreen';
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Gallery'>,
-  NativeStackScreenProps<RootStackParamList>
->;
+const {width} = Dimensions.get('window');
+const CARD_SIZE = (width - 48) / 2; // 2 colonnes avec padding
 
-type FilterKey = 'all' | 'mine' | 'favorites';
+// ─── Composant ───────────────────────────────────────────────────────────────
 
-interface FilterOption {
-  key: FilterKey;
-  label: string;
-}
+const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
+  const [gallery, setGallery] = useState<MemeResult[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const FILTERS: FilterOption[] = [
-  { key: 'all', label: 'Tous' },
-  { key: 'mine', label: 'Mes Créations' },
-  { key: 'favorites', label: 'Favoris' },
-];
+  // Recharge la galerie à chaque fois qu'on revient sur cet écran
+  useFocusEffect(
+    useCallback(() => {
+      loadGallery();
+    }, []),
+  );
 
-interface MemeItem {
-  id: string;
-  title: string;
-  author: string;
-  likes: number;
-}
+  // ── Chargement depuis AsyncStorage ───────────────────────────────────────
 
-const MOCK_MEMES: MemeItem[] = [
-  { id: '1', title: 'Le clash du siècle', author: 'MK', likes: 237 },
-  { id: '2', title: 'Ndolo impossible', author: 'AB', likes: 184 },
-  { id: '3', title: 'Ndem level 100', author: 'LL', likes: 312 },
-  { id: '4', title: 'Miondo vibes', author: 'JD', likes: 156 },
-  { id: '5', title: 'Akié du matin', author: 'NK', likes: 298 },
-  { id: '6', title: 'Kwatt legend', author: 'PT', likes: 421 },
-];
+  const loadGallery = async () => {
+    setLoading(true);
+    try {
+      const stored = await AsyncStorage.getItem('meme_gallery');
+      const data: MemeResult[] = stored ? JSON.parse(stored) : [];
+      setGallery(data);
+    } catch (e) {
+      console.error('Erreur chargement galerie :', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = (SCREEN_WIDTH - SPACING.marginHorizontal * 2 - SPACING.sm) / 2;
+  // ── Suppression d'un mème ─────────────────────────────────────────────────
 
-const GalleryScreen: React.FC<Props> = ({ navigation }) => {
-  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+  const deleteMeme = (id: string) => {
+    Alert.alert(
+      'Supprimer ce mème ?',
+      'Cette action est irréversible.',
+      [
+        {text: 'Annuler', style: 'cancel'},
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            const updated = gallery.filter(m => m.id !== id);
+            setGallery(updated);
+            await AsyncStorage.setItem('meme_gallery', JSON.stringify(updated));
+          },
+        },
+      ],
+    );
+  };
 
-  const renderMemeCard = ({ item }: { item: MemeItem }): React.JSX.Element => (
-    <TouchableOpacity style={styles.galleryCard} activeOpacity={0.85}>
-      <View style={styles.galleryThumb}>
-        <View style={styles.thumbOverlay}>
-          <Text style={styles.thumbEmoji}>🎨</Text>
+  // ── Vider toute la galerie ────────────────────────────────────────────────
+
+  const clearAll = () => {
+    Alert.alert(
+      'Vider la galerie ?',
+      'Tous tes mèmes seront supprimés définitivement.',
+      [
+        {text: 'Annuler', style: 'cancel'},
+        {
+          text: 'Tout supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            setGallery([]);
+            await AsyncStorage.removeItem('meme_gallery');
+          },
+        },
+      ],
+    );
+  };
+
+  // ── Formater la date ──────────────────────────────────────────────────────
+
+  const formatDate = (timestamp: number) => {
+    const d = new Date(timestamp);
+    return d.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
+  };
+
+  // ── Badge source ──────────────────────────────────────────────────────────
+
+  const sourceEmoji = {text: '💬', audio: '🎙️', image: '🖼️'};
+
+  // ── Rendu d'une carte mème ────────────────────────────────────────────────
+
+  const renderMeme = ({item}: {item: MemeResult}) => (
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate('MemeResult', {meme: item})}
+      onLongPress={() => deleteMeme(item.id)}>
+
+      {/* Aperçu image ou placeholder */}
+      {item.imageUri ? (
+        <Image source={{uri: item.imageUri}} style={styles.cardImage} resizeMode="cover" />
+      ) : (
+        <View style={styles.cardPlaceholder}>
+          <Text style={styles.cardPlaceholderEmoji}>😂</Text>
         </View>
-      </View>
-      <View style={styles.cardFooter}>
-        <Text style={styles.galleryTitle} numberOfLines={1}>
-          {item.title}
+      )}
+
+      {/* Overlay bas avec punchline */}
+      <View style={styles.cardOverlay}>
+        <Text style={styles.cardSourceEmoji}>
+          {sourceEmoji[item.sourceType]}
         </Text>
-        <View style={styles.cardMeta}>
-          <View style={styles.authorChip}>
-            <Text style={styles.authorText}>{item.author}</Text>
-          </View>
-          <Text style={styles.likesText}>❤️ {item.likes}</Text>
-        </View>
+        {(item.bottomText || item.punchline) ? (
+          <Text style={styles.cardPunchline} numberOfLines={2}>
+            {item.bottomText || item.punchline}
+          </Text>
+        ) : null}
+        <Text style={styles.cardDate}>{formatDate(item.createdAt)}</Text>
       </View>
+
     </TouchableOpacity>
   );
 
+  // ── État vide ─────────────────────────────────────────────────────────────
+
+  const EmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyEmoji}>🗂️</Text>
+      <Text style={styles.emptyTitle}>Galerie vide</Text>
+      <Text style={styles.emptySubtitle}>
+        Tes mèmes générés apparaîtront ici automatiquement.
+      </Text>
+      <TouchableOpacity
+        style={styles.emptyBtn}
+        onPress={() => navigation.goBack()}>
+        <Text style={styles.emptyBtnText}>✨ Créer mon premier mème</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // ── Rendu principal ───────────────────────────────────────────────────────
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Header title="La Galerie du Kwatt" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
 
-      {/* Filter chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
-        {FILTERS.map((filter) => (
-          <TouchableOpacity
-            key={filter.key}
-            style={[
-              styles.filterChip,
-              activeFilter === filter.key && styles.filterChipActive,
-            ]}
-            onPress={() => setActiveFilter(filter.key)}
-            activeOpacity={0.8}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                activeFilter === filter.key && styles.filterTextActive,
-              ]}
-            >
-              {filter.label}
-            </Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Text style={styles.backIcon}>←</Text>
+        </TouchableOpacity>
+        <View>
+          <Text style={styles.headerTitle}>Ma Galerie</Text>
+          {gallery.length > 0 && (
+            <Text style={styles.headerCount}>{gallery.length} mème{gallery.length > 1 ? 's' : ''}</Text>
+          )}
+        </View>
+        {gallery.length > 0 ? (
+          <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
+            <Text style={styles.clearBtnText}>🗑️</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        ) : (
+          <View style={{width: 40}} />
+        )}
+      </View>
 
-      {/* Grille de mèmes */}
-      <FlatList
-        data={MOCK_MEMES}
-        renderItem={renderMemeCard}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.gridRow}
-        contentContainerStyle={styles.gridContent}
-        showsVerticalScrollIndicator={false}
-      />
-    </SafeAreaView>
+      {/* Conseil appui long */}
+      {gallery.length > 0 && (
+        <Text style={styles.hint}>Appui long sur un mème pour le supprimer</Text>
+      )}
+
+      {/* Contenu */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
+      ) : gallery.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <FlatList
+          data={gallery}
+          keyExtractor={item => item.id}
+          renderItem={renderMeme}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+    </View>
   );
 };
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#0D0D0D',
   },
-
-  // Filters
-  filterRow: {
-    paddingHorizontal: SPACING.marginHorizontal,
-    paddingVertical: SPACING.sm,
-  },
-  filterChip: {
-    paddingHorizontal: SPACING.marginHorizontal,
-    paddingVertical: SPACING.xs + 2,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.white,
-    marginRight: SPACING.xs,
-    borderWidth: 1,
-    borderColor: COLORS.outlineVariant,
-  },
-  filterChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  filterText: {
-    ...FONTS.labelLg,
-    color: COLORS.textSecondary,
-  },
-  filterTextActive: {
-    color: COLORS.white,
-  },
-
-  // Grid
-  gridContent: {
-    paddingHorizontal: SPACING.marginHorizontal,
-    paddingBottom: SPACING.xl,
-  },
-  gridRow: {
-    justifyContent: 'space-between',
-    marginBottom: SPACING.sm,
-  },
-  galleryCard: {
-    width: CARD_WIDTH,
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
-    overflow: 'hidden',
-    ...ELEVATION.level1,
-  },
-  galleryThumb: {
-    width: '100%',
-    aspectRatio: 1,
-    backgroundColor: COLORS.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  thumbOverlay: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primaryFixed,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  thumbEmoji: {
-    fontSize: 22,
-  },
-  cardFooter: {
-    padding: SPACING.xs + 2,
-  },
-  galleryTitle: {
-    ...FONTS.labelLg,
-    color: COLORS.textMain,
-    fontWeight: '700',
-    marginBottom: SPACING.base,
-  },
-  cardMeta: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? 16 : 50,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E1E1E',
   },
-  authorChip: {
-    backgroundColor: COLORS.secondary + '20',
-    paddingHorizontal: SPACING.xs,
-    paddingVertical: 2,
-    borderRadius: RADII.full,
+  backBtn: {padding: 8},
+  backIcon: {fontSize: 22, color: '#FF6B35'},
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
-  authorText: {
-    ...FONTS.labelSm,
-    color: COLORS.secondary,
+  headerCount: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  clearBtn: {padding: 8},
+  clearBtnText: {fontSize: 22},
+  hint: {
+    textAlign: 'center',
+    color: '#444',
+    fontSize: 11,
+    marginTop: 8,
+    marginBottom: 4,
+    fontStyle: 'italic',
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  // ── Carte ──
+  card: {
+    width: CARD_SIZE,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#1A1A1A',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+  },
+  cardImage: {
+    width: '100%',
+    height: CARD_SIZE,
+  },
+  cardPlaceholder: {
+    width: '100%',
+    height: CARD_SIZE,
+    backgroundColor: '#222',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardPlaceholderEmoji: {fontSize: 48},
+  cardOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    padding: 8,
+  },
+  cardSourceEmoji: {fontSize: 14, marginBottom: 2},
+  cardPunchline: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 15,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  cardDate: {
+    color: '#555',
     fontSize: 10,
   },
-  likesText: {
-    ...FONTS.labelSm,
-    color: COLORS.textSecondary,
-    fontSize: 11,
+  // ── État vide ──
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  emptyEmoji: {fontSize: 64, marginBottom: 16},
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  emptyBtn: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  emptyBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
 

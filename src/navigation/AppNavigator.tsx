@@ -32,7 +32,6 @@ import RemixerScreen from '../screens/RemixerScreen';
 import MemeResultScreen from '../screens/MemeResultScreen';
 import GalleryScreen from '../screens/GalleryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-
 /* ─────────────────────────────────────────────────
  * TAB ICON (Texte-Emoji basé, pas de dépendance externe)
  * ───────────────────────────────────────────────── */
@@ -132,6 +131,8 @@ export const AppNavigator: React.FC = () => (
     <Stack.Screen name="Context" component={ContextScreen} />
     <Stack.Screen name="Voice" component={VoiceScreen} />
     <Stack.Screen name="Remixer" component={RemixerScreen} />
+    <Stack.Screen name="MemeResult" component={MemeResultScreen} />
+    <Stack.Screen name="Gallery" component={GalleryScreen} />
 
     {/* Résultat */}
     <Stack.Screen
