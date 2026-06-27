@@ -28,13 +28,12 @@ export const sendContextText = async (text: string, mood: string) => {
 };
 
 /**
- * MODULE AUDIO (Voice-to-Meme)
+ * MODULE AUDIO (Voice-to-Meme) — Version Axios
  */
 export const sendVoiceAudio = async (fileUri: string) => {
   try {
     const formData = new FormData();
 
-    // ALERTE DAVE : Le serveur attend impérativement 'audioInput' au lieu de 'audio'
     formData.append('audioInput', {
       uri: fileUri,
       type: 'audio/wav',
@@ -53,6 +52,45 @@ export const sendVoiceAudio = async (fileUri: string) => {
     throw error;
   }
 };
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+/**
+ * MODULE AUDIO — Version Fetch (Dave)
+ */
+export async function generateFromVoice(
+  audioFilePath: string,
+  mimeType: string = 'audio/m4a',
+): Promise<ApiResponse<any>> {
+  try {
+    const formData = new FormData();
+    formData.append('audioInput', {
+      uri: audioFilePath,
+      type: mimeType,
+      name: 'recording.m4a',
+    } as any);
+
+    const response = await fetch('https://meme-project-kappa.vercel.app/api/context/audio', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return { success: false, error: `Erreur API Vercel (${response.status}): ${text}` };
+    }
+
+    const json = await response.json();
+    return { success: true, data: json };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erreur réseau inconnue';
+    return { success: false, error: message };
+  }
+}
 
 /**
  * MODULE IMAGE (Status Remixer - Image to Image)
