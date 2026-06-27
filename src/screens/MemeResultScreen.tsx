@@ -11,18 +11,17 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface MemeResult {
   id: string;
   topText?: string;
   bottomText?: string;
   punchline?: string;
-  imageUri?: string;   // URI locale ou URL distante
+  imageUri?: string;
   sourceType: 'text' | 'audio' | 'image';
   createdAt: number;
 }
@@ -42,8 +41,6 @@ interface Props {
   };
   navigation: any;
 }
-
-// ─── Composant ───────────────────────────────────────────────────────────────
 
 const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
   const params = route?.params || {};
@@ -88,7 +85,6 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
   const [sharing, setSharing] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Sauvegarde automatique dans la galerie locale dès l'arrivée sur l'écran
   useEffect(() => {
     if (sourceType === 'gallery') {
       return;
@@ -97,17 +93,14 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceType]);
 
-  // ── Sauvegarde dans AsyncStorage ──────────────────────────────────────────
-
   const saveMemeToGallery = async () => {
     try {
       const stored = await AsyncStorage.getItem('meme_gallery');
       const gallery: MemeResult[] = stored ? JSON.parse(stored) : [];
 
-      // Eviter les doublons
       const exists = gallery.find(m => m.id === meme.id);
       if (!exists) {
-        gallery.unshift(meme); // plus récent en premier
+        gallery.unshift(meme);
         await AsyncStorage.setItem('meme_gallery', JSON.stringify(gallery));
       }
       setSaved(true);
@@ -115,8 +108,6 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
       console.error('Erreur sauvegarde galerie :', e);
     }
   };
-
-  // ── Capture de l'écran → URI base64 ──────────────────────────────────────
 
   const captureView = async (): Promise<string | null> => {
     try {
@@ -131,8 +122,6 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
     }
   };
 
-  // ── Partage générique (toutes apps) ──────────────────────────────────────
-
   const handleShare = async () => {
     setSharing(true);
     try {
@@ -143,22 +132,19 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
       }
 
       await Share.open({
-        title: 'Mon mème généré par IA 🔥',
-        message: meme.punchline || meme.bottomText || 'Regarde ce mème !',
+        title: 'Mon meme genere par IA',
+        message: meme.punchline || meme.bottomText || 'Regarde ce meme !',
         url: uri,
         type: 'image/png',
       });
     } catch (e: any) {
-      // L'utilisateur a fermé le panneau de partage → pas une vraie erreur
       if (e?.message !== 'User did not share') {
-        Alert.alert('Erreur', 'Le partage a échoué.');
+        Alert.alert('Erreur', 'Le partage a echoue.');
       }
     } finally {
       setSharing(false);
     }
   };
-
-  // ── Partage direct WhatsApp ───────────────────────────────────────────────
 
   const handleShareWhatsApp = async () => {
     setSharing(true);
@@ -170,7 +156,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
       }
 
       await Share.shareSingle({
-        title: 'Mon mème IA 🔥',
+        title: 'Mon meme IA',
         message: meme.punchline || meme.bottomText || '',
         url: uri,
         type: 'image/png',
@@ -179,59 +165,57 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
     } catch {
       Alert.alert(
         'WhatsApp introuvable',
-        'WhatsApp n\'est pas installé sur cet appareil.',
+        'WhatsApp n\'est pas installe sur cet appareil.',
       );
     } finally {
       setSharing(false);
     }
   };
 
-  // ── Badge source ──────────────────────────────────────────────────────────
-
   const sourceLabel = {
-    text: '💬 Texte',
-    audio: '🎙️ Voix',
-    image: '🖼️ Image',
+    text: 'Texte',
+    audio: 'Voix',
+    image: 'Image',
   }[meme.sourceType];
 
-  // ── Rendu ─────────────────────────────────────────────────────────────────
+  const sourceIcon = {
+    text: 'chatbubble-ellipses',
+    audio: 'mic',
+    image: 'image',
+  }[meme.sourceType];
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={22} color="#FF6B35" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ton Mème 🔥</Text>
+        <Text style={styles.headerTitle}>Ton Meme</Text>
         <TouchableOpacity
           onPress={() => navigation.navigate('Gallery')}
           style={styles.galleryBtn}>
-          <Text style={styles.galleryIcon}>🗂️</Text>
+          <Ionicons name="images-outline" size={22} color="#FF6B35" />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Badge source */}
         <View style={styles.sourceBadge}>
+          <Ionicons name={sourceIcon} size={12} color="#FF6B35" style={{marginRight: 4}} />
           <Text style={styles.sourceBadgeText}>{sourceLabel}</Text>
         </View>
 
-        {/* ─── Carte Mème (zone capturée) ─── */}
         <ViewShot ref={viewShotRef} options={{format: 'png', quality: 1}}>
           <View style={styles.memeCard}>
 
-            {/* Texte du haut */}
             {meme.topText ? (
               <View style={styles.textOverlayTop}>
                 <Text style={styles.memeText}>{meme.topText.toUpperCase()}</Text>
               </View>
             ) : null}
 
-            {/* Image */}
             {meme.imageUri ? (
               <Image
                 source={{uri: meme.imageUri}}
@@ -240,11 +224,10 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
               />
             ) : (
               <View style={styles.placeholderImage}>
-                <Text style={styles.placeholderEmoji}>😂</Text>
+                <Ionicons name="happy-outline" size={80} color="#555" />
               </View>
             )}
 
-            {/* Texte du bas / punchline */}
             {(meme.bottomText || meme.punchline) ? (
               <View style={styles.textOverlayBottom}>
                 <Text style={styles.memeText}>
@@ -255,22 +238,21 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
           </View>
         </ViewShot>
 
-        {/* Punchline complète en dessous */}
         {meme.punchline ? (
           <View style={styles.punchlineBox}>
             <Text style={styles.punchlineText}>"{meme.punchline}"</Text>
           </View>
         ) : null}
 
-        {/* Indicateur sauvegarde */}
         {saved && (
-          <Text style={styles.savedHint}>✅ Sauvegardé dans ta galerie</Text>
+          <View style={styles.savedRow}>
+            <Ionicons name="checkmark-circle" size={16} color="#4CAF50" style={{marginRight: 4}} />
+            <Text style={styles.savedHint}>Sauvegarde dans ta galerie</Text>
+          </View>
         )}
 
-        {/* ─── Boutons de partage ─── */}
         <View style={styles.actionsContainer}>
 
-          {/* Partage WhatsApp */}
           <TouchableOpacity
             style={[styles.btn, styles.btnWhatsApp]}
             onPress={handleShareWhatsApp}
@@ -278,11 +260,13 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
             {sharing ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.btnText}>📲 Partager sur WhatsApp</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Ionicons name="logo-whatsapp" size={18} color="#FFF" style={{marginRight: 8}} />
+                <Text style={styles.btnText}>Partager sur WhatsApp</Text>
+              </View>
             )}
           </TouchableOpacity>
 
-          {/* Partage général */}
           <TouchableOpacity
             style={[styles.btn, styles.btnShare]}
             onPress={handleShare}
@@ -290,24 +274,31 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
             {sharing ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.btnText}>🔗 Partager via...</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Ionicons name="share-social-outline" size={18} color="#FFF" style={{marginRight: 8}} />
+                <Text style={styles.btnText}>Partager via...</Text>
+              </View>
             )}
           </TouchableOpacity>
 
-          {/* Voir la galerie */}
           <TouchableOpacity
             style={[styles.btn, styles.btnGallery]}
             onPress={() => navigation.navigate('Gallery')}>
-            <Text style={styles.btnText}>🗂️ Voir ma galerie</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Ionicons name="images-outline" size={18} color="#FFF" style={{marginRight: 8}} />
+              <Text style={styles.btnText}>Voir ma galerie</Text>
+            </View>
           </TouchableOpacity>
 
-          {/* Nouveau mème */}
           <TouchableOpacity
             style={[styles.btn, styles.btnNew]}
             onPress={() => navigation.goBack()}>
-            <Text style={[styles.btnText, {color: '#FF6B35'}]}>
-              ✨ Créer un nouveau mème
-            </Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Ionicons name="refresh-outline" size={18} color="#FF6B35" style={{marginRight: 8}} />
+              <Text style={[styles.btnText, {color: '#FF6B35'}]}>
+                Creer un nouveau meme
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -315,8 +306,6 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
     </View>
   );
 };
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -335,7 +324,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1E1E1E',
   },
   backBtn: {padding: 8},
-  backIcon: {fontSize: 22, color: '#FF6B35'},
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
@@ -343,7 +331,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   galleryBtn: {padding: 8},
-  galleryIcon: {fontSize: 22},
   scroll: {
     paddingHorizontal: 16,
     paddingBottom: 40,
@@ -358,6 +345,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#FF6B35',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sourceBadgeText: {
     color: '#FF6B35',
@@ -365,7 +354,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
   },
-  // ── Mème card ──
   memeCard: {
     width: 340,
     borderRadius: 16,
@@ -388,7 +376,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  placeholderEmoji: {fontSize: 80},
   textOverlayTop: {
     backgroundColor: 'rgba(0,0,0,0.75)',
     padding: 12,
@@ -407,7 +394,6 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
     letterSpacing: 0.5,
   },
-  // ── Punchline ──
   punchlineBox: {
     marginTop: 16,
     backgroundColor: '#1A1A1A',
@@ -423,13 +409,16 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     lineHeight: 22,
   },
-  savedHint: {
+  savedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 10,
+  },
+  savedHint: {
     color: '#4CAF50',
     fontSize: 12,
     fontWeight: '600',
   },
-  // ── Boutons ──
   actionsContainer: {
     marginTop: 24,
     width: '100%',

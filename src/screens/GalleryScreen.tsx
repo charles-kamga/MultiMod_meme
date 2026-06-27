@@ -12,27 +12,23 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import type {MemeResult} from './MemeResultScreen';
 
 const {width} = Dimensions.get('window');
-const CARD_SIZE = (width - 48) / 2; // 2 colonnes avec padding
-
-// ─── Composant ───────────────────────────────────────────────────────────────
+const CARD_SIZE = (width - 48) / 2;
 
 const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
   const [gallery, setGallery] = useState<MemeResult[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Recharge la galerie à chaque fois qu'on revient sur cet écran
   useFocusEffect(
     useCallback(() => {
       loadGallery();
     }, []),
   );
-
-  // ── Chargement depuis AsyncStorage ───────────────────────────────────────
 
   const loadGallery = async () => {
     setLoading(true);
@@ -46,8 +42,6 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
       setLoading(false);
     }
   };
-
-  // ── Suppression d'un mème ─────────────────────────────────────────────────
 
   const deleteMeme = (id: string) => {
     Alert.alert(
@@ -68,8 +62,6 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
     );
   };
 
-  // ── Vider toute la galerie ────────────────────────────────────────────────
-
   const clearAll = () => {
     Alert.alert(
       'Vider la galerie ?',
@@ -88,18 +80,16 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
     );
   };
 
-  // ── Formater la date ──────────────────────────────────────────────────────
-
   const formatDate = (timestamp: number) => {
     const d = new Date(timestamp);
     return d.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
   };
 
-  // ── Badge source ──────────────────────────────────────────────────────────
-
-  const sourceEmoji = {text: '💬', audio: '🎙️', image: '🖼️'};
-
-  // ── Rendu d'une carte mème ────────────────────────────────────────────────
+  const sourceIcons: Record<string, string> = {
+    text: 'chatbubble-ellipses',
+    audio: 'mic',
+    image: 'image',
+  };
 
   const renderMeme = ({item}: {item: MemeResult}) => (
     <TouchableOpacity
@@ -111,21 +101,20 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         imageUrl: item.imageUri || 'https://via.placeholder.com/500',
       })}
       onLongPress={() => deleteMeme(item.id)}>
-
-      {/* Aperçu image ou placeholder */}
       {item.imageUri ? (
         <Image source={{uri: item.imageUri}} style={styles.cardImage} resizeMode="cover" />
       ) : (
         <View style={styles.cardPlaceholder}>
-          <Text style={styles.cardPlaceholderEmoji}>😂</Text>
+          <Ionicons name="happy-outline" size={48} color="#555" />
         </View>
       )}
-
-      {/* Overlay bas avec punchline */}
       <View style={styles.cardOverlay}>
-        <Text style={styles.cardSourceEmoji}>
-          {sourceEmoji[item.sourceType]}
-        </Text>
+        <Ionicons
+          name={sourceIcons[item.sourceType] || 'help-circle-outline'}
+          size={14}
+          color="#FF6B35"
+          style={{marginBottom: 2}}
+        />
         {(item.bottomText || item.punchline) ? (
           <Text style={styles.cardPunchline} numberOfLines={2}>
             {item.bottomText || item.punchline}
@@ -133,15 +122,12 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         ) : null}
         <Text style={styles.cardDate}>{formatDate(item.createdAt)}</Text>
       </View>
-
     </TouchableOpacity>
   );
 
-  // ── État vide ─────────────────────────────────────────────────────────────
-
   const EmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyEmoji}>🗂️</Text>
+      <Ionicons name="images-outline" size={64} color="#555" />
       <Text style={styles.emptyTitle}>Galerie vide</Text>
       <Text style={styles.emptySubtitle}>
         Tes mèmes générés apparaîtront ici automatiquement.
@@ -149,21 +135,20 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
       <TouchableOpacity
         style={styles.emptyBtn}
         onPress={() => navigation.goBack()}>
-        <Text style={styles.emptyBtnText}>✨ Créer mon premier mème</Text>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Ionicons name="sparkles" size={16} color="#FFFFFF" style={{marginRight: 6}} />
+          <Text style={styles.emptyBtnText}>Créer mon premier mème</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
 
-  // ── Rendu principal ───────────────────────────────────────────────────────
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
-
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={22} color="#FF6B35" />
         </TouchableOpacity>
         <View>
           <Text style={styles.headerTitle}>Ma Galerie</Text>
@@ -173,19 +158,15 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         </View>
         {gallery.length > 0 ? (
           <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
-            <Text style={styles.clearBtnText}>🗑️</Text>
+            <Ionicons name="trash-outline" size={22} color="#FF6B35" />
           </TouchableOpacity>
         ) : (
           <View style={{width: 40}} />
         )}
       </View>
-
-      {/* Conseil appui long */}
       {gallery.length > 0 && (
         <Text style={styles.hint}>Appui long sur un mème pour le supprimer</Text>
       )}
-
-      {/* Contenu */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
@@ -207,8 +188,6 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
   );
 };
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -225,7 +204,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1E1E1E',
   },
   backBtn: {padding: 8},
-  backIcon: {fontSize: 22, color: '#FF6B35'},
   headerTitle: {
     fontSize: 20,
     fontWeight: '800',
@@ -239,7 +217,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   clearBtn: {padding: 8},
-  clearBtnText: {fontSize: 22},
   hint: {
     textAlign: 'center',
     color: '#444',
@@ -261,7 +238,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  // ── Carte ──
   card: {
     width: CARD_SIZE,
     borderRadius: 12,
@@ -284,12 +260,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardPlaceholderEmoji: {fontSize: 48},
   cardOverlay: {
     backgroundColor: 'rgba(0,0,0,0.85)',
     padding: 8,
   },
-  cardSourceEmoji: {fontSize: 14, marginBottom: 2},
   cardPunchline: {
     color: '#FFFFFF',
     fontSize: 11,
@@ -302,19 +276,18 @@ const styles = StyleSheet.create({
     color: '#555',
     fontSize: 10,
   },
-  // ── État vide ──
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
   },
-  emptyEmoji: {fontSize: 64, marginBottom: 16},
   emptyTitle: {
     fontSize: 22,
     fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: 8,
+    marginTop: 16,
   },
   emptySubtitle: {
     fontSize: 14,

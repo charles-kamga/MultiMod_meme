@@ -15,6 +15,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, FONTS } from '../theme/colors';
@@ -136,7 +137,7 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
 
         {/* Info Card */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
+          <Ionicons name="information-circle-outline" size={20} color={COLORS.secondaryMid} style={{ marginRight: SPACING.xs, marginTop: 2 }} />
           <View style={styles.infoTextBlock}>
             <Text style={styles.infoText}>
               L'IA va scanner le sous-entendu, le sarcasme et la dose de "piment"
@@ -154,7 +155,7 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : (
             <AfroButton
-              title="Laisser Gemini Analyser ✨"
+              title="Laisser Gemini Analyser"
               onPress={handleGenerate}
               color={COLORS.primary}
               disabled={!text.trim()}
@@ -233,11 +234,6 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     marginTop: SPACING.md,
     alignItems: 'flex-start',
-  },
-  infoIcon: {
-    fontSize: 20,
-    marginRight: SPACING.xs,
-    marginTop: 2,
   },
   infoTextBlock: {
     flex: 1,

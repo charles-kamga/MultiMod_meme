@@ -15,6 +15,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
@@ -218,7 +219,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
 
   const micButtonColor =
     recordingState === 'recording' ? COLORS.primary : COLORS.secondary;
-  const micIcon = recordingState === 'recording' ? '⏹️' : '🎤';
+  const micIconName = recordingState === 'recording' ? 'stop-circle' : 'mic';
 
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
@@ -268,15 +269,15 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
             onPress={handleMicPress}
             activeOpacity={0.85}
           >
-            <Text style={styles.micIcon}>{micIcon}</Text>
+            <Ionicons name={micIconName} size={56} color={COLORS.white} />
           </TouchableOpacity>
 
           {/* Affichage du timer avec icône d'horloge rotative */}
           <View style={styles.timerRow}>
             {recordingState === 'recording' && (
-              <Animated.Text style={[styles.timerIcon, { transform: [{ rotate: spin }] }]}>
-                ⏱️
-              </Animated.Text>
+              <Animated.View style={{ transform: [{ rotate: spin }], marginRight: SPACING.xs }}>
+                <Ionicons name="time-outline" size={20} color={COLORS.onSurfaceVariant} />
+              </Animated.View>
             )}
             <Text style={styles.timerDisplay}>{formatTime(seconds)}</Text>
           </View>
@@ -290,7 +291,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
                 style={styles.playButton}
                 onPress={isPlaying ? stopPlay : startPlay}
               >
-                <Text style={styles.playIcon}>{isPlaying ? '⏸️' : '▶️'}</Text>
+                <Ionicons name={isPlaying ? 'pause' : 'play'} size={20} color={COLORS.white} />
               </TouchableOpacity>
               <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${playbackProgress * 100}%` }]} />
@@ -299,7 +300,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
                 style={styles.trashButton}
                 onPress={discardRecording}
               >
-                <Text style={styles.trashIcon}>🗑️</Text>
+                <Ionicons name="trash-outline" size={22} color={COLORS.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
 
@@ -334,7 +335,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : (
             <AfroButton
-              title="Envoyer l'Audio à l'IA ✨"
+              title="Envoyer l'Audio à l'IA"
               onPress={handleSubmitAudio}
               color={COLORS.primary}
             />
@@ -389,18 +390,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...ELEVATION.level2,
   },
-  micIcon: {
-    fontSize: 56,
-  },
   timerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: SPACING.lg,
-  },
-  timerIcon: {
-    fontSize: 20,
-    marginRight: SPACING.xs,
   },
   timerDisplay: {
     ...FONTS.labelLg,
@@ -433,9 +427,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...ELEVATION.level1,
   },
-  playIcon: {
-    fontSize: 20,
-  },
   progressBar: {
     flex: 1,
     height: 4,
@@ -452,9 +443,6 @@ const styles = StyleSheet.create({
   },
   trashButton: {
     padding: SPACING.xs,
-  },
-  trashIcon: {
-    fontSize: 22,
   },
   transcriptionStatus: {
     flexDirection: 'row',

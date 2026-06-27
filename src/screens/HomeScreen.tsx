@@ -24,6 +24,7 @@ import {
   ScrollView,
   StatusBar
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // On utilise les couleurs du thème défini par Klod (Tâche 1).
 import { COLORS } from '../theme/colors'; 
@@ -32,8 +33,8 @@ const { width } = Dimensions.get('window');
 
 // Originalité : Contenu localisé (Le "Kwatt" Spirit)
 const INTRO_CAROUSEL = [
-  { id: '1', title: 'Le Jimpat de l\'IA 🧙‍♂️', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.', color: '#128C7E' },
-  { id: '2', title: 'Mode VOUP VAP 📸', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.', color: '#075E54' },
+  { id: '1', title: 'Le Jimpat de l\'IA', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.', color: '#128C7E' },
+  { id: '2', title: 'Mode VOUP VAP', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.', color: '#075E54' },
 ];
 
 const HomeScreen = ({ navigation }: any) => {
@@ -41,6 +42,7 @@ const HomeScreen = ({ navigation }: any) => {
   // Rendu des cartes du carrousel
   const renderTip = ({ item }: any) => (
     <View style={[styles.tipCard, { backgroundColor: item.color }]}>
+      <Ionicons name="flash" size={20} color="#FFF" style={{ marginBottom: 8 }} />
       <Text style={styles.tipTitle}>{item.title}</Text>
       <Text style={styles.tipText}>{item.text}</Text>
     </View>
@@ -87,7 +89,7 @@ const HomeScreen = ({ navigation }: any) => {
               style={styles.card} 
               onPress={() => navigation.navigate('Context')}
             >
-              <Text style={styles.cardIcon}>✍️</Text>
+              <Ionicons name="document-text-outline" size={32} color="#333" style={{ marginBottom: 10 }} />
               <Text style={styles.cardTitle}>Context Reader</Text>
               <Text style={styles.cardSub}>Texte & Clashs</Text>
             </TouchableOpacity>
@@ -97,7 +99,7 @@ const HomeScreen = ({ navigation }: any) => {
               style={[styles.card, styles.cardAudio]} 
               onPress={() => navigation.navigate('Voice')}
             >
-              <Text style={styles.cardIcon}>🎙️</Text>
+              <Ionicons name="mic-outline" size={32} color="#333" style={{ marginBottom: 10 }} />
               <Text style={styles.cardTitle}>Voice-to-Meme</Text>
               <Text style={styles.cardSub}>Punchlines vocales</Text>
             </TouchableOpacity>
@@ -109,7 +111,7 @@ const HomeScreen = ({ navigation }: any) => {
             onPress={() => navigation.navigate('Remixer')}
           >
             <View style={styles.cardFullContent}>
-              <Text style={styles.cardIcon}>🖼️</Text>
+              <Ionicons name="image-outline" size={32} color="#333" />
               <View style={{marginLeft: 15}}>
                 <Text style={styles.cardTitle}>Status Remixer</Text>
                 <Text style={styles.cardSub}>Détourne les photos de ta galerie</Text>
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
   cardAudio: { backgroundColor: '#FFF9F2', borderColor: '#FFEAD2' },
   cardFull: { width: '100%', backgroundColor: '#F2F6FF', borderColor: '#DCE7FF' },
   cardFullContent: { flexDirection: 'row', alignItems: 'center' },
-  cardIcon: { fontSize: 32, marginBottom: 10 },
+
   cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
   cardSub: { fontSize: 12, color: '#888', marginTop: 2 },
   

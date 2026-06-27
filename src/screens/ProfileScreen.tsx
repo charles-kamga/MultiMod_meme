@@ -1,313 +1,235 @@
-/**
- * ÉCRAN : ProfileScreen — Mon Profil Afro-Vibe
- * Page profil utilisateur avec avatar, stats, et menu de paramètres.
- * Inspiré de la maquette `mon_profil_afro_vibe/screen.png` et du code de référence.
- */
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import auth from '@react-native-firebase/auth';
+import { logoutUser } from '../services/authService';
 
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { RootStackParamList, MainTabParamList } from '../navigation/types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { Header } from '../components/SharedComponents';
+const COLORS = {
+  primary: '#C84B31',
+  background: '#FAF6F0',
+  text: '#1A1A1A',
+  gray: '#888888',
+  cardBg: '#FFFFFF',
+};
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Profile'>,
-  NativeStackScreenProps<RootStackParamList>
->;
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return (name[0] || '?').toUpperCase();
+};
 
-interface StatItem {
-  value: string;
-  label: string;
-}
+export default function ProfileScreen({ navigation }: any) {
+  const [memeCount, setMemeCount] = useState(0);
+  const user = auth().currentUser;
+  const displayName = user?.displayName || user?.email || 'Utilisateur';
+  const initials = user?.displayName ? getInitials(user.displayName) : '?';
+  const email = user?.email || '';
 
-interface MenuItem {
-  label: string;
-  icon: string;
-  action?: () => void;
-}
-
-const STATS: StatItem[] = [
-  { value: '1.2k', label: 'Mèmes' },
-  { value: '8.4k', label: 'Partages' },
-  { value: '342', label: 'Favoris' },
-];
-
-const ProfileScreen: React.FC<Props> = ({ navigation }) => {
-  const MENU_ITEMS: MenuItem[] = [
-    { label: 'Mes paramètres', icon: '⚙️' },
-    { label: 'Préférences de langue', icon: '🌍' },
-    { label: "Centre d'aide", icon: '❓' },
-    { label: 'Inviter un ami', icon: '📨' },
-    {
-      label: 'Déconnexion',
-      icon: '🚪',
-      action: () => {
-        Alert.alert(
-          'Déconnexion',
-          'Tu es sûr de vouloir quitter le kwatt ?',
-          [
-            { text: 'Annuler', style: 'cancel' },
-            {
-              text: 'Oui, je sors',
-              style: 'destructive',
-              onPress: () => navigation.getParent()?.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              }),
-            },
-          ],
-        );
-      },
-    },
-  ];
+  const handleLogout = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Tu es sur de vouloir quitter le kwatt ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Oui, je sors',
+          style: 'destructive',
+          onPress: async () => {
+            await logoutUser();
+            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          },
+        },
+      ],
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header title="Mon Profil" />
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Mon Profil</Text>
+      </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Section Profil */}
-        <View style={styles.profileSection}>
-          {/* Avatar */}
-          <View style={styles.avatarWrapper}>
-            <View style={styles.largeAvatar}>
-              <Text style={styles.avatarEmoji}>👤</Text>
-            </View>
-            <TouchableOpacity style={styles.editAvatarButton}>
-              <Text style={styles.editAvatarIcon}>✏️</Text>
-            </TouchableOpacity>
+      <View style={styles.avatarContainer}>
+        <View style={styles.initialsAvatar}>
+          <Text style={styles.initialsText}>{initials}</Text>
+        </View>
+        
+        <Text style={styles.userName}>{displayName}</Text>
+        {email ? <Text style={styles.userSubtitle}>{email}</Text> : null}
+
+      <View style={styles.statsContainer}>
+        <View style={styles.statBox}>
+          <Text style={styles.statNumber}>{memeCount}</Text>
+          <Text style={styles.statLabel}>Mèmes générés</Text>
+        </View>
+      </View>
+
+      <View style={styles.menuContainer}>
+        <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="settings-outline" size={22} color={COLORS.gray} />
+            <Text style={styles.menuItemText}>Mes paramètres</Text>
           </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
+        </TouchableOpacity>
 
-          {/* Nom et bio */}
-          <Text style={styles.profileName}>Le Ndoki Master</Text>
-          <Text style={styles.profileBio}>
-            Créateur de punchlines depuis 237 🇨🇲
-          </Text>
-
-          {/* Badge */}
-          <View style={styles.premiumBadge}>
-            <Text style={styles.premiumBadgeIcon}>⭐</Text>
-            <Text style={styles.premiumBadgeText}>Membre Premium</Text>
+        <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="earth-outline" size={22} color={COLORS.gray} />
+            <Text style={styles.menuItemText}>Préférences de langue</Text>
           </View>
-        </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
+        </TouchableOpacity>
 
-        {/* Stats */}
-        <View style={styles.statsCard}>
-          {STATS.map((stat, index) => (
-            <React.Fragment key={stat.label}>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
-              </View>
-              {index < STATS.length - 1 && <View style={styles.statDivider} />}
-            </React.Fragment>
-          ))}
-        </View>
+        <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="help-circle-outline" size={22} color={COLORS.gray} />
+            <Text style={styles.menuItemText}>Centre d'aide</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
+        </TouchableOpacity>
 
-        {/* Menu */}
-        <View style={styles.menuCard}>
-          {MENU_ITEMS.map((item, index) => (
-            <TouchableOpacity
-              key={item.label}
-              style={[
-                styles.menuItem,
-                index < MENU_ITEMS.length - 1 && styles.menuItemBorder,
-              ]}
-              onPress={item.action}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuItemLeft}>
-                <Text style={styles.menuItemIcon}>{item.icon}</Text>
-                <Text
-                  style={[
-                    styles.menuItemText,
-                    item.label === 'Déconnexion' && styles.menuItemTextDanger,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </View>
-              <Text style={styles.menuArrow}>›</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="person-add-outline" size={22} color={COLORS.gray} />
+            <Text style={styles.menuItemText}>Inviter un ami</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
+        </TouchableOpacity>
 
-        {/* Version */}
-        <Text style={styles.versionText}>AfroMeme Generator v1.0.0</Text>
-      </ScrollView>
-    </SafeAreaView>
+        <TouchableOpacity 
+          style={[styles.menuItem, styles.noBorder]} 
+          onPress={handleLogout}
+        >
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="log-out-outline" size={22} color={COLORS.primary} />
+            <Text style={[styles.menuItemText, styles.logoutText]}>Déconnexion</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+        </TouchableOpacity>
+      </View>
+
+    </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  scrollContent: {
-    padding: SPACING.marginHorizontal,
-    paddingBottom: SPACING.xl,
+  contentContainer: {
+    paddingBottom: 30,
   },
-
-  // Profile Section
-  profileSection: {
+  headerContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  avatarContainer: {
     alignItems: 'center',
-    marginTop: SPACING.md,
-    marginBottom: SPACING.md,
+    marginTop: 20,
+    marginBottom: 25,
   },
-  avatarWrapper: {
-    position: 'relative',
-    marginBottom: SPACING.sm,
-  },
-  largeAvatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
+  initialsAvatar: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: '#F3A953',
     justifyContent: 'center',
-    borderWidth: 4,
-    borderColor: COLORS.primary + '30',
-    ...ELEVATION.level1,
-  },
-  avatarEmoji: {
-    fontSize: 48,
-  },
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.primary,
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: COLORS.background,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    marginBottom: 15,
   },
-  editAvatarIcon: {
-    fontSize: 16,
+  initialsText: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 1,
   },
-  profileName: {
-    ...FONTS.headlineMd,
-    color: COLORS.textMain,
-    marginBottom: SPACING.base,
+  userName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 4,
   },
-  profileBio: {
-    ...FONTS.bodyMd,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-  },
-  premiumBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.accent + '20',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADII.full,
-  },
-  premiumBadgeIcon: {
+  userSubtitle: {
     fontSize: 14,
-    marginRight: SPACING.base,
+    color: COLORS.gray,
   },
-  premiumBadgeText: {
-    ...FONTS.labelSm,
-    color: COLORS.tertiary,
-    fontWeight: '600',
-  },
-
-  // Stats
-  statsCard: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    ...ELEVATION.level1,
+  statsContainer: {
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 20,
+    marginHorizontal: 24,
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    marginBottom: 25,
   },
   statBox: {
-    flex: 1,
     alignItems: 'center',
   },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.textMain,
-    marginBottom: SPACING.base,
+  statNumber: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: COLORS.text,
   },
   statLabel: {
-    ...FONTS.labelSm,
-    color: COLORS.textSecondary,
+    fontSize: 14,
+    color: COLORS.gray,
+    marginTop: 2,
   },
-  statDivider: {
-    width: 1,
-    height: '80%',
-    backgroundColor: COLORS.surfaceVariant,
-    alignSelf: 'center',
-  },
-
-  // Menu
-  menuCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
-    padding: SPACING.xs,
-    ...ELEVATION.level1,
+  menuContainer: {
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 20,
+    marginHorizontal: 24,
+    paddingHorizontal: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   menuItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.sm + 2,
-    paddingHorizontal: SPACING.sm,
-  },
-  menuItemBorder: {
+    justifyContent: 'space-between',
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceContainerLow,
+    borderBottomColor: '#F5F5F5',
+  },
+  noBorder: {
+    borderBottomWidth: 0,
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
-  menuItemIcon: {
-    fontSize: 20,
-    marginRight: SPACING.sm,
   },
   menuItemText: {
-    ...FONTS.bodyMd,
-    color: COLORS.textMain,
+    fontSize: 16,
+    color: COLORS.text,
+    marginLeft: 14,
+    fontWeight: '500',
   },
-  menuItemTextDanger: {
-    color: COLORS.error,
-  },
-  menuArrow: {
-    fontSize: 24,
-    color: COLORS.textSecondary,
-  },
-
-  // Version
-  versionText: {
-    ...FONTS.labelSm,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: SPACING.lg,
+  logoutText: {
+    color: COLORS.primary,
+    fontWeight: 'bold',
   },
 });
-
-export default ProfileScreen;

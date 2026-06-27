@@ -1,9 +1,3 @@
-/**
- * ÉCRAN : LoginScreen — Connexion au Kwatt
- * Interface d'accueil épurée et chaleureuse.
- * Inspiré de la maquette `connexion_au_kwatt/screen.png`
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -23,24 +17,40 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 import { AfroButton } from '../components/SharedComponents';
-import { loginWithEmail } from '../services/authService';
+import { registerWithEmail } from '../services/authService';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (): Promise<void> => {
-    if (!email.trim() || !password) {
-      Alert.alert('Oooh !', 'Remplis tous les champs.');
+  const handleRegister = async () => {
+    if (!fullName.trim()) {
+      Alert.alert('Oooh !', 'Entre ton nom complet.');
       return;
     }
+    if (!email.trim()) {
+      Alert.alert('Oooh !', 'Entre ton adresse email.');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Oooh !', 'Choisis un mot de passe.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Oooh !', 'Les mots de passe ne correspondent pas.');
+      return;
+    }
+
     setLoading(true);
-    const result = await loginWithEmail(email, password);
+    const result = await registerWithEmail(email, password, fullName.trim());
     setLoading(false);
+
     if (result.success) {
       navigation.replace('MainTabs');
     } else {
@@ -59,41 +69,31 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Logo */}
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
               <Ionicons name="sparkles" size={36} color={COLORS.white} />
             </View>
           </View>
 
-          {/* Titre */}
-          <Text style={styles.title}>Bienvenue au Kwatt</Text>
+          <Text style={styles.title}>Creer ton compte</Text>
           <Text style={styles.subtitle}>
-            Connecte-toi pour créer tes mèmes légendaires.
+            Rejoins le Kwatt et crée tes memes legendaires.
           </Text>
 
-          {/* Carte formulaire */}
           <View style={styles.formCard}>
-            {/* Boutons sociaux */}
-            <View style={styles.socialSection}>
-              <TouchableOpacity
-                style={styles.socialButton}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="logo-google" size={18} color={COLORS.textMain} style={{ marginRight: SPACING.xs }} />
-                <Text style={styles.socialText}>Continuer avec Google</Text>
-              </TouchableOpacity>
-
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Nom complet</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Jean Kamga"
+                placeholderTextColor={COLORS.outline}
+                value={fullName}
+                onChangeText={setFullName}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
             </View>
 
-            {/* Divider */}
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OU</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Champs */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
               <TextInput
@@ -127,30 +127,39 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={COLORS.onSurfaceVariant} />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.forgotRow}>
-                <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
-              </TouchableOpacity>
             </View>
 
-            {/* Bouton principal */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Confirmer le mot de passe</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="••••••••"
+                placeholderTextColor={COLORS.outline}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+            </View>
+
             {loading ? (
               <View style={styles.loadingRow}>
                 <ActivityIndicator size="large" color={COLORS.primary} />
+                <Text style={styles.loadingText}>Creation du compte...</Text>
               </View>
             ) : (
               <AfroButton
-                title="Se connecter"
-                onPress={handleLogin}
+                title="Creer mon compte"
+                onPress={handleRegister}
                 color={COLORS.primary}
               />
             )}
           </View>
 
-          {/* Lien inscription */}
-          <View style={styles.signupRow}>
-            <Text style={styles.signupLabel}>Pas encore de compte ? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.signupLink}>S'inscrire</Text>
+          <View style={styles.loginRow}>
+            <Text style={styles.loginLabel}>Deja un compte ? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.loginLink}>Se connecter</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -173,8 +182,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xl,
   },
-
-  // Logo
   logoContainer: {
     alignItems: 'center',
     marginBottom: SPACING.md,
@@ -188,7 +195,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...ELEVATION.level2,
   },
-  // Titres
   title: {
     ...FONTS.headlineLg,
     color: COLORS.textMain,
@@ -201,52 +207,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
-
-  // Carte formulaire
   formCard: {
     backgroundColor: COLORS.surfaceContainerLow,
     borderRadius: RADII.xl,
     padding: SPACING.md,
     ...ELEVATION.level1,
   },
-
-  // Social
-  socialSection: {
-    marginBottom: SPACING.sm,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 52,
-    borderRadius: RADII.full,
-    borderWidth: 1.5,
-    borderColor: COLORS.outlineVariant,
-    backgroundColor: COLORS.white,
-    marginBottom: SPACING.xs,
-  },
-  socialText: {
-    ...FONTS.labelLg,
-    color: COLORS.textMain,
-  },
-  // Divider
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: SPACING.md,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.outlineVariant,
-  },
-  dividerText: {
-    ...FONTS.labelSm,
-    color: COLORS.textSecondary,
-    marginHorizontal: SPACING.sm,
-  },
-
-  // Input
   inputGroup: {
     marginBottom: SPACING.sm,
   },
@@ -279,35 +245,29 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
   },
-  forgotRow: {
-    alignItems: 'flex-end',
-    marginTop: SPACING.xs,
-  },
-  forgotText: {
-    ...FONTS.labelSm,
-    color: COLORS.primary,
-  },
-
   loadingRow: {
     alignItems: 'center',
     padding: SPACING.md,
   },
-
-  // Inscription
-  signupRow: {
+  loadingText: {
+    ...FONTS.labelLg,
+    color: COLORS.primary,
+    marginTop: SPACING.xs,
+  },
+  loginRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: SPACING.lg,
   },
-  signupLabel: {
+  loginLabel: {
     ...FONTS.bodyMd,
     color: COLORS.textSecondary,
   },
-  signupLink: {
+  loginLink: {
     ...FONTS.labelLg,
     color: COLORS.primary,
   },
 });
 
-export default LoginScreen;
+export default RegisterScreen;
