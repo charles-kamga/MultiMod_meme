@@ -39,7 +39,20 @@ interface Props {
 // ─── Composant ───────────────────────────────────────────────────────────────
 
 const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
-  const {meme} = route.params;
+  const params = route?.params || {};
+  const sourceType = params.sourceType || 'text';
+  const punchline = params.punchline || 'Pas de punchline reçue';
+  const imageUrl = params.imageUrl || 'https://via.placeholder.com/500';
+  
+  // Pour la sauvegarde locale, on reconstruit l'objet MemeResult
+  const meme = {
+    id: params.id || Date.now().toString(),
+    sourceType: sourceType as any,
+    punchline: punchline,
+    imageUri: imageUrl,
+    createdAt: Date.now(),
+  };
+
   const viewShotRef = useRef<any>(null);
   const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -47,9 +60,12 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
 
   // Sauvegarde automatique dans la galerie locale dès l'arrivée sur l'écran
   useEffect(() => {
+    if (sourceType === 'gallery') {
+      return;
+    }
     saveMemeToGallery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sourceType]);
 
   // ── Sauvegarde dans AsyncStorage ──────────────────────────────────────────
 

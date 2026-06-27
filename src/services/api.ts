@@ -1,123 +1,83 @@
-/**
- * SERVICE API — Communication avec le backend Flask
- * Base URL pointant vers l'émulateur Android (10.0.2.2 = localhost host machine)
- */
+import axios from 'axios';
 
-const API_BASE_URL = 'http://10.0.2.2:5000/api';
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-export interface MemeResult {
-  memeUrl: string;
-  punchlineTop: string;
-  punchlineBottom: string;
-  transcription?: string;
-  effectApplied?: string;
-}
+// 1. Nouvelle URL officielle sur Vercel
+const api = axios.create({
+  baseURL: 'https://meme-project-kappa.vercel.app/api',
+  timeout: 30000, // On passe à 30s car les serveurs gratuits Vercel peuvent être lents au réveil
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 /**
- * POST /generate/context
- * Envoi du texte de conversation + mood pour générer un mème contextuel.
+ * MODULE TEXTE (Context Reader)
  */
-export async function generateFromContext(
-  text: string,
-  mood: 'clash' | 'ndolo' | 'nyanga' | 'sarcasme',
-): Promise<ApiResponse<MemeResult>> {
+export const sendContextText = async (text: string, mood: string) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/generate/context`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, mood }),
+    // ALERTE DAVE : Le serveur attend 'textInput'
+    // On lui envoie le texte combiné avec le mood pour que Gemini ait tout le contexte
+    const response = await api.post('/context/text', { 
+      textInput: `[Mood: ${mood}] ${text}` 
     });
-    const json = await response.json();
-    return { success: true, data: json };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Erreur réseau inconnue';
-    return { success: false, error: message };
+    
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du texte :", error);
+    throw error;
   }
-}
+};
 
 /**
- * POST /generate/voice
- * Envoi d'un fichier audio via FormData pour transcription + génération de mème.
+ * MODULE AUDIO (Voice-to-Meme)
  */
-export async function generateFromVoice(
-  audioFilePath: string,
-  mimeType: string = 'audio/mp4',
-): Promise<ApiResponse<MemeResult>> {
+export const sendVoiceAudio = async (fileUri: string) => {
   try {
     const formData = new FormData();
-    formData.append('audio', {
-      uri: audioFilePath,
-      type: mimeType,
-      name: 'recording.m4a',
-    } as unknown as Blob);
 
-    const response = await fetch(`${API_BASE_URL}/generate/voice`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      body: formData,
+    // ALERTE DAVE : Le serveur attend impérativement 'audioInput' au lieu de 'audio'
+    formData.append('audioInput', {
+      uri: fileUri,
+      type: 'audio/wav',
+      name: 'voice_recording.wav',
+    } as any);
+
+    const response = await api.post('/context/audio', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
-    const json = await response.json();
-    return { success: true, data: json };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Erreur réseau inconnue';
-    return { success: false, error: message };
+
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'audio :", error);
+    throw error;
   }
-}
+};
 
 /**
- * POST /generate/remix
- * Envoi d'une image + expression camerounaise optionnelle pour remix visuel.
+ * MODULE IMAGE (Status Remixer - Image to Image)
  */
-export async function generateFromImage(
-  imageFilePath: string,
-  expression?: string,
-  mimeType: string = 'image/jpeg',
-): Promise<ApiResponse<MemeResult>> {
+export const sendImageRemix = async (uri: string, fileName: string, type: string, textPrompt: string) => {
   try {
     const formData = new FormData();
-    formData.append('image', {
-      uri: imageFilePath,
-      type: mimeType,
-      name: 'photo.jpg',
-    } as unknown as Blob);
 
-    if (expression) {
-      formData.append('expression', expression);
-    }
+    // 1. On ajoute le texte d'ambiance (champ 'textInput' demandé par Dave)
+    formData.append('textInput', textPrompt || "Remix ce statut");
 
-    const response = await fetch(`${API_BASE_URL}/generate/remix`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      body: formData,
-    });
-    const json = await response.json();
-    return { success: true, data: json };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Erreur réseau inconnue';
-    return { success: false, error: message };
+    // 2. On prépare et on ajoute le fichier image (champ 'imagesInputs' demandé par Dave)
+    formData.append('imagesInputs', {
+      uri: uri,
+      name: fileName || 'upload.jpg',
+      type: type || 'image/jpeg',
+    } as any);
+
+    // 3. Envoi de la requête multipart
+    // Note : On ne force PAS le Content-Type pour laisser Axios gérer le boundary
+    const response = await api.post('/context/text', formData);
+
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du Remix Image :", error);
+    throw error;
   }
-}
-
-/**
- * GET /gallery
- * Récupération de la liste des mèmes récents.
- */
-export async function fetchGallery(): Promise<ApiResponse<MemeResult[]>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/gallery`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    const json = await response.json();
-    return { success: true, data: json };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Erreur réseau inconnue';
-    return { success: false, error: message };
-  }
-}
+};
