@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
+import { COLORS, SPACING, RADII, FONTS } from '../theme/colors';
 import { Header, AfroButton, MoodChip } from '../components/SharedComponents';
 import { generateFromContext } from '../services/api';
 

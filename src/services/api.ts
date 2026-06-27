@@ -47,21 +47,26 @@ export async function generateFromContext(
  */
 export async function generateFromVoice(
   audioFilePath: string,
-  mimeType: string = 'audio/mp4',
-): Promise<ApiResponse<MemeResult>> {
+  mimeType: string = 'audio/m4a',
+): Promise<ApiResponse<any>> {
   try {
     const formData = new FormData();
-    formData.append('audio', {
+    formData.append('audioInput', {
       uri: audioFilePath,
       type: mimeType,
       name: 'recording.m4a',
-    } as unknown as Blob);
+    } as any);
 
-    const response = await fetch(`${API_BASE_URL}/generate/voice`, {
+    const response = await fetch('https://meme-project-kappa.vercel.app/api/context/audio', {
       method: 'POST',
-      headers: { 'Content-Type': 'multipart/form-data' },
       body: formData,
     });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return { success: false, error: `Erreur API Vercel (${response.status}): ${text}` };
+    }
+
     const json = await response.json();
     return { success: true, data: json };
   } catch (error: unknown) {

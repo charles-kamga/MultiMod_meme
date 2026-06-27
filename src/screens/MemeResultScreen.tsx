@@ -30,7 +30,14 @@ export interface MemeResult {
 interface Props {
   route: {
     params: {
-      meme: MemeResult;
+      meme?: MemeResult;
+      memeUrl?: string;
+      punchlineTop?: string;
+      punchlineBottom?: string;
+      transcription?: string;
+      source?: 'context' | 'voice' | 'remix';
+      sourceType?: 'voice' | 'context' | 'remix' | 'text' | 'audio' | 'image';
+      resultData?: any;
     };
   };
   navigation: any;
@@ -39,9 +46,44 @@ interface Props {
 // ─── Composant ───────────────────────────────────────────────────────────────
 
 const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
-  const {meme} = route.params;
+  const params = route.params;
+  const directMeme = params?.meme;
+  const sourceType = params?.sourceType;
+  const resultData = params?.resultData;
+
+  const meme: MemeResult = React.useMemo(() => {
+    if (directMeme) {
+      return directMeme;
+    }
+
+    const data = resultData || params || {};
+    const srcType = sourceType || params?.source;
+
+    let mappedSource: 'text' | 'audio' | 'image' = 'audio';
+    if (srcType === 'context' || srcType === 'text') {
+      mappedSource = 'text';
+    } else if (srcType === 'remix' || srcType === 'image') {
+      mappedSource = 'image';
+    } else if (srcType === 'voice' || srcType === 'audio') {
+      mappedSource = 'audio';
+    }
+
+    const imageUri = data.memeUrl || data.imageUri || data.imageUrl || '';
+    const topText = data.punchlineTop || data.topText || '';
+    const bottomText = data.punchlineBottom || data.bottomText || data.punchline || '';
+    const punchline = data.punchline || data.punchlineBottom || data.punchlineTop || '';
+
+    return {
+      id: data.id || String(Date.now()),
+      topText,
+      bottomText,
+      punchline,
+      imageUri,
+      sourceType: mappedSource,
+      createdAt: data.createdAt || Date.now(),
+    };
+  }, [directMeme, sourceType, resultData, params]);
   const viewShotRef = useRef<any>(null);
-  const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -130,7 +172,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
         type: 'image/png',
        social: 'whatsapp' as any,
       });
-    } catch (e: any) {
+    } catch {
       Alert.alert(
         'WhatsApp introuvable',
         'WhatsApp n\'est pas installé sur cet appareil.',
