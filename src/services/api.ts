@@ -3,7 +3,7 @@
  * Base URL pointant vers l'émulateur Android (10.0.2.2 = localhost host machine)
  */
 
-const API_BASE_URL = 'http://10.0.2.2:5000/api';
+const API_BASE_URL = 'http://192.168.1.154:5000/api';
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -28,13 +28,24 @@ export async function generateFromContext(
   mood: 'clash' | 'ndolo' | 'nyanga' | 'sarcasme',
 ): Promise<ApiResponse<MemeResult>> {
   try {
-    const response = await fetch(`${API_BASE_URL}/generate/context`, {
+    const response = await fetch(`${API_BASE_URL}/context/text`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, mood }),
+      body: JSON.stringify({ textInput: text, mood }),
     });
     const json = await response.json();
-    return { success: true, data: json };
+
+    // Adaptation de la réponse de Dave au format attendu par l'app
+    return {
+      success: true,
+      data: {
+        memeUrl: json.data.generatedImage,
+        punchlineTop: json.data.punchline,
+        punchlineBottom: '',
+        transcription: undefined,
+        effectApplied: undefined,
+      },
+    };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erreur réseau inconnue';
     return { success: false, error: message };
