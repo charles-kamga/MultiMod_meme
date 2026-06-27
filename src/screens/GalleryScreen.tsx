@@ -105,7 +105,11 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.85}
-      onPress={() => navigation.navigate('MemeResult', {meme: item})}
+      onPress={() => navigation.navigate('MemeResult', {
+        sourceType: 'gallery',
+        punchline: item.punchline || item.bottomText || 'Pas de punchline',
+        imageUrl: item.imageUri || 'https://via.placeholder.com/500',
+      })}
       onLongPress={() => deleteMeme(item.id)}>
 
       {/* Aperçu image ou placeholder */}

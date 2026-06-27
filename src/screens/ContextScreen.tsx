@@ -19,7 +19,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 import { Header, AfroButton, MoodChip } from '../components/SharedComponents';
-import { generateFromContext } from '../services/api';
+import { sendContextText } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Context'>;
 
@@ -52,18 +52,25 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     setIsLoading(true);
-    const result = await generateFromContext(text, selectedMood);
-    setIsLoading(false);
-
-    if (result.success && result.data) {
-      navigation.navigate('MemeResult', {
-        memeUrl: result.data.memeUrl,
-        punchlineTop: result.data.punchlineTop,
-        punchlineBottom: result.data.punchlineBottom,
-        source: 'context',
-      });
-    } else {
-      Alert.alert('Erreur', result.error || 'Impossible de générer le mème.');
+    try {
+      const result = await sendContextText(text, selectedMood);
+      
+      // SÉCURISATION DU MAPPING et NAVIGATION
+      try {
+        navigation.navigate('MemeResult', {
+          sourceType: 'text',
+          punchline: result?.data?.punchline || result?.punchline || 'Pas de punchline reçue',
+          imageUrl: result?.data?.generatedImage || result?.generatedImage || 'https://via.placeholder.com/500',
+        });
+      } catch (navError) {
+        console.error('Erreur Navigation:', navError);
+        Alert.alert('Erreur Navigation', "Impossible d'accéder à l'écran de résultat.");
+      }
+    } catch (error: any) {
+      console.error('Erreur API:', error);
+      Alert.alert('Erreur Serveur', error.message || 'Le serveur a crashé ou est injoignable.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
