@@ -87,10 +87,3 @@ L'application exploite deux capteurs matériels stratégiques. Le code intègre 
 
 * **Le Microphone (RECORD_AUDIO)** : Requis pour capturer les notes vocales du module Voice-to-Meme[cite: 1, 2].
 * **Le Stockage / La Galerie (READ_EXTERNAL_STORAGE / READ_MEDIA_IMAGES)** : Requis pour sélectionner les images du module Status Remixer[cite: 1, 2].
-
-# EN CE QUI CONCERNE LA REPARTITION DES TACHES:
-## [Tâche 2] Dashboard & Studio - Serena (85)
-- **Écran d'accueil :** Création du hub central "Meme Studio" pour diriger vers les fonctions de l'IA.
-- **UI/UX :** Implémentation d'un carrousel fluide (FlatList) pour les astuces de l'application.
-- **Originalité :** Adaptation de l'interface avec le langage local (Mode VOUP VAP, Jimpat) pour coller au projet Afromeme.
-- **Navigation :** Branchement des boutons vers les écrans 'Context', 'Voice' et 'Remixer'.
