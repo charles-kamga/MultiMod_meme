@@ -14,6 +14,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -33,7 +34,8 @@ interface StatItem {
 
 interface MenuItem {
   label: string;
-  icon: string;
+  iconName: string;
+  iconColor: string;
   action?: () => void;
 }
 
@@ -45,13 +47,14 @@ const STATS: StatItem[] = [
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const MENU_ITEMS: MenuItem[] = [
-    { label: 'Mes paramètres', icon: '⚙️' },
-    { label: 'Préférences de langue', icon: '🌍' },
-    { label: "Centre d'aide", icon: '❓' },
-    { label: 'Inviter un ami', icon: '📨' },
+    { label: 'Mes paramètres', iconName: 'settings-outline', iconColor: '#666666' },
+    { label: 'Préférences de langue', iconName: 'globe-outline', iconColor: '#666666' },
+    { label: "Centre d'aide", iconName: 'help-circle-outline', iconColor: '#666666' },
+    { label: 'Inviter un ami', iconName: 'person-add-outline', iconColor: '#666666' },
     {
       label: 'Déconnexion',
-      icon: '🚪',
+      iconName: 'log-out-outline',
+      iconColor: '#C84B31',
       action: () => {
         Alert.alert(
           'Déconnexion',
@@ -85,10 +88,10 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           {/* Avatar */}
           <View style={styles.avatarWrapper}>
             <View style={styles.largeAvatar}>
-              <Text style={styles.avatarEmoji}>👤</Text>
+              <Ionicons name="person" size={48} color={COLORS.white} />
             </View>
             <TouchableOpacity style={styles.editAvatarButton}>
-              <Text style={styles.editAvatarIcon}>✏️</Text>
+              <Ionicons name="pencil" size={16} color={COLORS.white} />
             </TouchableOpacity>
           </View>
 
@@ -100,7 +103,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Badge */}
           <View style={styles.premiumBadge}>
-            <Text style={styles.premiumBadgeIcon}>⭐</Text>
+            <Ionicons name="star" size={14} color={COLORS.tertiary} style={{ marginRight: SPACING.base }} />
             <Text style={styles.premiumBadgeText}>Membre Premium</Text>
           </View>
         </View>
@@ -131,7 +134,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               activeOpacity={0.7}
             >
               <View style={styles.menuItemLeft}>
-                <Text style={styles.menuItemIcon}>{item.icon}</Text>
+                <Ionicons name={item.iconName} size={22} color={item.iconColor} style={styles.menuItemIcon} />
                 <Text
                   style={[
                     styles.menuItemText,
@@ -184,9 +187,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary + '30',
     ...ELEVATION.level1,
   },
-  avatarEmoji: {
-    fontSize: 48,
-  },
   editAvatarButton: {
     position: 'absolute',
     bottom: 4,
@@ -199,9 +199,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: COLORS.background,
-  },
-  editAvatarIcon: {
-    fontSize: 16,
   },
   profileName: {
     ...FONTS.headlineMd,
@@ -221,10 +218,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     borderRadius: RADII.full,
-  },
-  premiumBadgeIcon: {
-    fontSize: 14,
-    marginRight: SPACING.base,
   },
   premiumBadgeText: {
     ...FONTS.labelSm,
@@ -286,7 +279,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuItemIcon: {
-    fontSize: 20,
     marginRight: SPACING.sm,
   },
   menuItemText: {

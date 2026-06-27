@@ -24,16 +24,16 @@ import {
   ScrollView,
   StatusBar
 } from 'react-native';
-
+import Icon from 'react-native-vector-icons/Ionicons';
 // On utilise les couleurs du thème défini par Klod (Tâche 1).
-import { COLORS } from '../theme/colors'; 
+import { COLORS } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
 // Originalité : Contenu localisé (Le "Kwatt" Spirit)
 const INTRO_CAROUSEL = [
-  { id: '1', title: 'Le Jimpat de l\'IA 🧙‍♂️', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.', color: '#128C7E' },
-  { id: '2', title: 'Mode VOUP VAP 📸', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.', color: '#075E54' },
+  { id: '1', title: 'Le Jimpat de l\'IA', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.', color: '#128C7E' },
+  { id: '2', title: 'Mode VOUP VAP', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.', color: '#075E54' },
 ];
 
 const HomeScreen = ({ navigation }: any) => {
@@ -52,18 +52,18 @@ const HomeScreen = ({ navigation }: any) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         
         {/* Header : Accueil personnalisé */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greet}>Meme Studio</Text>
-            <Text style={styles.appName}>AFROMEME 🇨🇲</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.profileBtn}
-            onPress={() => navigation.navigate('Profile')}
-          >
-            <Text style={styles.profileInitial}>S</Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.header}>
+              <View>
+                <Text style={styles.greet}>Meme Studio</Text>
+                <Text style={styles.appName}>AFROMEME</Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.profileBtn}
+                onPress={() => navigation.navigate('Profile')}
+              >
+                <Text style={styles.profileInitial}>S</Text>
+              </TouchableOpacity>
+            </View>
 
         {/* Carrousel d'astuces (Objectif technique Tâche 2) */}
         <View style={styles.carouselSection}>
@@ -87,7 +87,7 @@ const HomeScreen = ({ navigation }: any) => {
               style={styles.card} 
               onPress={() => navigation.navigate('Context')}
             >
-              <Text style={styles.cardIcon}>✍️</Text>
+              <Icon name="document-text" size={32} color={COLORS.textMain} style={styles.cardIcon} />
               <Text style={styles.cardTitle}>Context Reader</Text>
               <Text style={styles.cardSub}>Texte & Clashs</Text>
             </TouchableOpacity>
@@ -97,7 +97,7 @@ const HomeScreen = ({ navigation }: any) => {
               style={[styles.card, styles.cardAudio]} 
               onPress={() => navigation.navigate('Voice')}
             >
-              <Text style={styles.cardIcon}>🎙️</Text>
+              <Icon name="mic" size={32} color={COLORS.textMain} style={styles.cardIcon} />
               <Text style={styles.cardTitle}>Voice-to-Meme</Text>
               <Text style={styles.cardSub}>Punchlines vocales</Text>
             </TouchableOpacity>
@@ -109,7 +109,7 @@ const HomeScreen = ({ navigation }: any) => {
             onPress={() => navigation.navigate('Remixer')}
           >
             <View style={styles.cardFullContent}>
-              <Text style={styles.cardIcon}>🖼️</Text>
+              <Icon name="image" size={32} color={COLORS.textMain} style={styles.cardIcon} />
               <View style={{marginLeft: 15}}>
                 <Text style={styles.cardTitle}>Status Remixer</Text>
                 <Text style={styles.cardSub}>Détourne les photos de ta galerie</Text>
@@ -162,7 +162,9 @@ const styles = StyleSheet.create({
   cardAudio: { backgroundColor: '#FFF9F2', borderColor: '#FFEAD2' },
   cardFull: { width: '100%', backgroundColor: '#F2F6FF', borderColor: '#DCE7FF' },
   cardFullContent: { flexDirection: 'row', alignItems: 'center' },
-  cardIcon: { fontSize: 32, marginBottom: 10 },
+  cardIcon: { 
+    marginBottom: 10 
+  },
   cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
   cardSub: { fontSize: 12, color: '#888', marginTop: 2 },
   

@@ -12,6 +12,7 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 
 /* ─────────────────────────────────────────────────
@@ -90,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
         style={styles.backButton}
         activeOpacity={0.7}
       >
-        <Text style={styles.backButtonText}>←</Text>
+        <Icon name="arrow-back" size={22} color={COLORS.textMain} />
       </TouchableOpacity>
     )}
     <View style={styles.headerTextSection}>
@@ -179,9 +180,9 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
       <Text style={styles.largeCardTitle}>{title}</Text>
       <Text style={styles.largeCardDesc}>{description}</Text>
       <View style={styles.largeCardArrowRow}>
-        <View style={[styles.arrowCircle, { backgroundColor: accentColor }]}>
-          <Text style={styles.arrowIcon}>→</Text>
-        </View>
+       <View style={[styles.arrowCircle, { backgroundColor: accentColor }]}>
+         <Icon name="chevron-forward" size={20} color={COLORS.white} />
+       </View>
       </View>
     </TouchableOpacity>
   );

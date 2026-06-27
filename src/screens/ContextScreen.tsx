@@ -15,6 +15,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
@@ -134,16 +135,16 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
-          <View style={styles.infoTextBlock}>
-            <Text style={styles.infoText}>
-              L'IA va scanner le sous-entendu, le sarcasme et la dose de "piment"
-              dans ton texte pour sortir le mème parfait.
-            </Text>
-          </View>
-        </View>
+         {/* Info Card */}
+         <View style={styles.infoCard}>
+           <Icon name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
+           <View style={styles.infoTextBlock}>
+             <Text style={styles.infoText}>
+               L'IA va scanner le sous-entendu, le sarcasme et la dose de "piment"
+               dans ton texte pour sortir le mème parfait.
+             </Text>
+           </View>
+         </View>
 
         {/* Bouton d'action */}
         <View style={styles.actionSection}>
@@ -235,7 +236,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   infoIcon: {
-    fontSize: 20,
     marginRight: SPACING.xs,
     marginTop: 2,
   },

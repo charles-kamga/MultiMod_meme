@@ -11,6 +11,7 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -157,12 +158,21 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
   };
 
   // ── Badge source ──────────────────────────────────────────────────────────
-
-  const sourceLabel = {
-    text: '💬 Texte',
-    audio: '🎙️ Voix',
-    image: '🖼️ Image',
-  }[meme.sourceType];
+  
+  const renderSourceBadge = () => {
+    const sources = {
+      text: { label: 'Texte', icon: 'document-text' },
+      audio: { label: 'Voix', icon: 'mic' },
+      image: { label: 'Image', icon: 'image' },
+    };
+    const source = sources[meme.sourceType as keyof typeof sources] || sources.text;
+    return (
+      <View style={styles.sourceBadge}>
+        <Icon name={source.icon} size={14} color="#FF6B35" />
+        <Text style={styles.sourceBadgeText}> {source.label}</Text>
+      </View>
+    );
+  };
 
   // ── Rendu ─────────────────────────────────────────────────────────────────
 
@@ -173,22 +183,20 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Icon name="arrow-back" size={22} color="#FF6B35" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ton Mème 🔥</Text>
         <TouchableOpacity
           onPress={() => navigation.navigate('Gallery')}
           style={styles.galleryBtn}>
-          <Text style={styles.galleryIcon}>🗂️</Text>
+          <Icon name="folder-open" size={22} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Badge source */}
-        <View style={styles.sourceBadge}>
-          <Text style={styles.sourceBadgeText}>{sourceLabel}</Text>
-        </View>
+        {renderSourceBadge()}
 
         {/* ─── Carte Mème (zone capturée) ─── */}
         <ViewShot ref={viewShotRef} options={{format: 'png', quality: 1}}>
@@ -248,10 +256,13 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
             {sharing ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.btnText}>📲 Partager sur WhatsApp</Text>
+              <View style={styles.btnContent}>
+                <Icon name="logo-whatsapp" size={20} color="#fff" />
+                <Text style={styles.btnText}> Partager sur WhatsApp</Text>
+              </View>
             )}
           </TouchableOpacity>
-
+          
           {/* Partage général */}
           <TouchableOpacity
             style={[styles.btn, styles.btnShare]}
@@ -260,24 +271,31 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
             {sharing ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.btnText}>🔗 Partager via...</Text>
+              <View style={styles.btnContent}>
+                <Icon name="share-social" size={20} color="#fff" />
+                <Text style={styles.btnText}> Partager via...</Text>
+              </View>
             )}
           </TouchableOpacity>
-
+          
           {/* Voir la galerie */}
           <TouchableOpacity
             style={[styles.btn, styles.btnGallery]}
             onPress={() => navigation.navigate('Gallery')}>
-            <Text style={styles.btnText}>🗂️ Voir ma galerie</Text>
+            <View style={styles.btnContent}>
+              <Icon name="images" size={20} color="#fff" />
+              <Text style={styles.btnText}> Voir ma galerie</Text>
+            </View>
           </TouchableOpacity>
-
+          
           {/* Nouveau mème */}
           <TouchableOpacity
             style={[styles.btn, styles.btnNew]}
             onPress={() => navigation.goBack()}>
-            <Text style={[styles.btnText, {color: '#FF6B35'}]}>
-              ✨ Créer un nouveau mème
-            </Text>
+            <View style={styles.btnContent}>
+              <Icon name="add-circle" size={20} color="#FF6B35" />
+              <Text style={[styles.btnText, {color: '#FF6B35'}]}> Créer un nouveau mème</Text>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -420,6 +438,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  btnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

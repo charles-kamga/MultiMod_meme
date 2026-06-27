@@ -15,6 +15,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
@@ -119,11 +120,9 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
 
     if (result.success && result.data) {
       navigation.navigate('MemeResult', {
-        memeUrl: result.data.memeUrl,
-        punchlineTop: result.data.punchlineTop,
-        punchlineBottom: result.data.punchlineBottom,
-        transcription: result.data.transcription,
-        source: 'voice',
+        sourceType: 'voice',
+        punchline: result.data.punchlineTop || result.data.punchline || 'Punchline vocale générée !',
+        imageUrl: result.data.memeUrl || 'https://via.placeholder.com/500',
       });
     } else {
       Alert.alert('Erreur', result.error || 'Impossible de traiter l\'audio.');
@@ -132,7 +131,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
 
   const micButtonColor =
     recordingState === 'recording' ? COLORS.primary : COLORS.secondary;
-  const micIcon = recordingState === 'recording' ? '⏹️' : '🎤';
+  const micIconName = recordingState === 'recording' ? 'stop' : 'mic';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -171,14 +170,14 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
             </>
           )}
 
-          {/* Bouton micro principal */}
-          <TouchableOpacity
-            style={[styles.micButton, { backgroundColor: micButtonColor }]}
-            onPress={handleMicPress}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.micIcon}>{micIcon}</Text>
-          </TouchableOpacity>
+           {/* Bouton micro principal */}
+           <TouchableOpacity
+             style={[styles.micButton, { backgroundColor: micButtonColor }]}
+             onPress={handleMicPress}
+             activeOpacity={0.85}
+           >
+             <Icon name={micIconName} size={56} color={COLORS.white} />
+           </TouchableOpacity>
 
           {/* Timer */}
           <Text style={styles.timerDisplay}>{formatTime(seconds)}</Text>
@@ -187,20 +186,20 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
         {/* Zone "capturé" — Lecteur audio + Poubelle */}
         {recordingState === 'captured' && (
           <View style={styles.capturedZone}>
-            <View style={styles.audioPlayer}>
-              <TouchableOpacity style={styles.playButton}>
-                <Text style={styles.playIcon}>▶️</Text>
-              </TouchableOpacity>
-              <View style={styles.progressBar}>
-                <View style={styles.progressFill} />
-              </View>
-              <TouchableOpacity
-                style={styles.trashButton}
-                onPress={discardRecording}
-              >
-                <Text style={styles.trashIcon}>🗑️</Text>
-              </TouchableOpacity>
-            </View>
+             <View style={styles.audioPlayer}>
+               <TouchableOpacity style={styles.playButton}>
+                 <Icon name="play" size={20} color={COLORS.white} />
+               </TouchableOpacity>
+               <View style={styles.progressBar}>
+                 <View style={styles.progressFill} />
+               </View>
+               <TouchableOpacity
+                 style={styles.trashButton}
+                 onPress={discardRecording}
+               >
+                 <Icon name="trash-outline" size={22} color={COLORS.textMain} />
+               </TouchableOpacity>
+             </View>
 
             <View style={styles.transcriptionStatus}>
               <ActivityIndicator size="small" color={COLORS.onSurfaceVariant} />
@@ -232,11 +231,11 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.submittingText}>Envoi en cours...</Text>
             </View>
           ) : (
-            <AfroButton
-              title="Envoyer l'Audio à l'IA ✨"
-              onPress={handleSubmitAudio}
-              color={COLORS.primary}
-            />
+             <AfroButton
+               title="Envoyer l'Audio à l'IA"
+               onPress={handleSubmitAudio}
+               color={COLORS.primary}
+             />
           )}
         </View>
       )}
@@ -289,7 +288,7 @@ const styles = StyleSheet.create({
     ...ELEVATION.level2,
   },
   micIcon: {
-    fontSize: 56,
+    // Removed as Icon is now used
   },
   timerDisplay: {
     ...FONTS.labelLg,
@@ -324,7 +323,7 @@ const styles = StyleSheet.create({
     ...ELEVATION.level1,
   },
   playIcon: {
-    fontSize: 20,
+    // Removed as Icon is now used
   },
   progressBar: {
     flex: 1,
@@ -344,7 +343,7 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
   },
   trashIcon: {
-    fontSize: 22,
+    // Removed as Icon is now used
   },
   transcriptionStatus: {
     flexDirection: 'row',

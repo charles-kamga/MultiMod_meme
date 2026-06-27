@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
   PermissionsAndroid,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -182,26 +183,26 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
           )}
         </View>
 
-        {/* Boutons Galerie / Photo */}
-        <View style={styles.mediaButtonsRow}>
-          <TouchableOpacity
-            style={[styles.mediaButton, { backgroundColor: COLORS.secondary }]}
-            onPress={handleSelectFromGallery}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.mediaButtonIcon}>🖼️</Text>
-            <Text style={styles.mediaButtonText}>Galerie</Text>
-          </TouchableOpacity>
-          <View style={styles.mediaButtonSpacer} />
-          <TouchableOpacity
-            style={[styles.mediaButton, { backgroundColor: COLORS.tertiaryContainer }]}
-            onPress={handleTakeWithCamera}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.mediaButtonIcon}>📷</Text>
-            <Text style={styles.mediaButtonText}>Photo</Text>
-          </TouchableOpacity>
-        </View>
+         {/* Boutons Galerie / Photo */}
+         <View style={styles.mediaButtonsRow}>
+           <TouchableOpacity
+             style={[styles.mediaButton, { backgroundColor: COLORS.secondary }]}
+             onPress={handleSelectFromGallery}
+             activeOpacity={0.85}
+           >
+             <Icon name="images" size={20} color={COLORS.white} style={styles.mediaButtonIcon} />
+             <Text style={styles.mediaButtonText}>Galerie</Text>
+           </TouchableOpacity>
+           <View style={styles.mediaButtonSpacer} />
+           <TouchableOpacity
+             style={[styles.mediaButton, { backgroundColor: COLORS.tertiaryContainer }]}
+             onPress={handleTakeWithCamera}
+             activeOpacity={0.85}
+           >
+             <Icon name="camera" size={20} color={COLORS.white} style={styles.mediaButtonIcon} />
+             <Text style={styles.mediaButtonText}>Photo</Text>
+           </TouchableOpacity>
+         </View>
 
         {/* Champ expression camerounaise */}
         <View style={styles.expressionSection}>
@@ -221,17 +222,17 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Info Card */}
-        <View style={styles.tipCard}>
-          <Text style={styles.tipIcon}>💡</Text>
-          <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>Astuce du Studio</Text>
-            <Text style={styles.tipText}>
-              Gemini capte l'essence de ton expression pour créer un meme qui
-              parle au pays.
-            </Text>
-          </View>
-        </View>
+         {/* Info Card */}
+         <View style={styles.tipCard}>
+           <Icon name="bulb" size={20} color={COLORS.primary} style={styles.tipIcon} />
+           <View style={styles.tipContent}>
+             <Text style={styles.tipTitle}>Astuce du Studio</Text>
+             <Text style={styles.tipText}>
+               Gemini capte l'essence de ton expression pour créer un meme qui
+               parle au pays.
+             </Text>
+           </View>
+         </View>
 
         {/* Bouton d'action */}
         <View style={styles.actionSection}>
@@ -341,7 +342,6 @@ const styles = StyleSheet.create({
     ...ELEVATION.level1,
   },
   mediaButtonIcon: {
-    fontSize: 18,
     marginRight: SPACING.xs,
   },
   mediaButtonText: {
@@ -392,7 +392,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   tipIcon: {
-    fontSize: 20,
     marginRight: SPACING.xs,
     marginTop: 2,
   },

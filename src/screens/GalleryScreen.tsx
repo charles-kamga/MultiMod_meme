@@ -12,8 +12,10 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
+import { COLORS } from '../theme/colors';
 import type {MemeResult} from './MemeResultScreen';
 
 const {width} = Dimensions.get('window');
@@ -96,8 +98,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
   };
 
   // ── Badge source ──────────────────────────────────────────────────────────
-
-  const sourceEmoji = {text: '💬', audio: '🎙️', image: '🖼️'};
+  // Removed sourceEmoji mapping as Icons are used in renderMeme
 
   // ── Rendu d'une carte mème ────────────────────────────────────────────────
 
@@ -117,15 +118,20 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         <Image source={{uri: item.imageUri}} style={styles.cardImage} resizeMode="cover" />
       ) : (
         <View style={styles.cardPlaceholder}>
-          <Text style={styles.cardPlaceholderEmoji}>😂</Text>
+          <Icon name="image" size={48} color="#444" />
         </View>
       )}
 
       {/* Overlay bas avec punchline */}
       <View style={styles.cardOverlay}>
-        <Text style={styles.cardSourceEmoji}>
-          {sourceEmoji[item.sourceType]}
-        </Text>
+        <Icon 
+          name={
+            item.sourceType === 'text' ? 'document-text' : 
+            item.sourceType === 'audio' ? 'mic' : 'image'
+          } 
+          size={14} 
+          color={COLORS.white} 
+        />
         {(item.bottomText || item.punchline) ? (
           <Text style={styles.cardPunchline} numberOfLines={2}>
             {item.bottomText || item.punchline}
@@ -141,7 +147,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
 
   const EmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyEmoji}>🗂️</Text>
+      <Icon name="images-outline" size={64} color="#444" style={{marginBottom: 16}} />
       <Text style={styles.emptyTitle}>Galerie vide</Text>
       <Text style={styles.emptySubtitle}>
         Tes mèmes générés apparaîtront ici automatiquement.
@@ -163,7 +169,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Icon name="arrow-back" size={22} color="#FF6B35" />
         </TouchableOpacity>
         <View>
           <Text style={styles.headerTitle}>Ma Galerie</Text>
@@ -173,7 +179,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         </View>
         {gallery.length > 0 ? (
           <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
-            <Text style={styles.clearBtnText}>🗑️</Text>
+            <Icon name="trash-outline" size={22} color="#FFFFFF" />
           </TouchableOpacity>
         ) : (
           <View style={{width: 40}} />
@@ -225,7 +231,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1E1E1E',
   },
   backBtn: {padding: 8},
-  backIcon: {fontSize: 22, color: '#FF6B35'},
+  backIcon: {
+    // Removed
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: '800',
@@ -239,7 +247,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   clearBtn: {padding: 8},
-  clearBtnText: {fontSize: 22},
+  clearBtnText: {
+    // Removed
+  },
   hint: {
     textAlign: 'center',
     color: '#444',
@@ -284,12 +294,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardPlaceholderEmoji: {fontSize: 48},
+  cardPlaceholderEmoji: {
+    // Removed
+  },
   cardOverlay: {
     backgroundColor: 'rgba(0,0,0,0.85)',
     padding: 8,
   },
-  cardSourceEmoji: {fontSize: 14, marginBottom: 2},
+  cardSourceEmoji: {
+    // Removed
+  },
   cardPunchline: {
     color: '#FFFFFF',
     fontSize: 11,
@@ -309,7 +323,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 32,
   },
-  emptyEmoji: {fontSize: 64, marginBottom: 16},
+  emptyEmoji: {
+    // Removed
+  },
   emptyTitle: {
     fontSize: 22,
     fontWeight: '800',

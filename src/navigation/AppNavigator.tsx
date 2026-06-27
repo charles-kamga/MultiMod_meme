@@ -18,6 +18,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, MainTabParamList } from './types';
@@ -33,71 +34,45 @@ import MemeResultScreen from '../screens/MemeResultScreen';
 import GalleryScreen from '../screens/GalleryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 /* ─────────────────────────────────────────────────
- * TAB ICON (Texte-Emoji basé, pas de dépendance externe)
- * ───────────────────────────────────────────────── */
-
-interface TabIconProps {
-  icon: string;
-  label: string;
-  focused: boolean;
-}
-
-const TabIcon: React.FC<TabIconProps> = ({ icon, label, focused }) => (
-  <View
-    style={[
-      styles.tabIconContainer,
-      focused && styles.tabIconContainerActive,
-    ]}
-  >
-    <Text style={[styles.tabIconEmoji, focused && styles.tabIconEmojiActive]}>
-      {icon}
-    </Text>
-    <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
-      {label}
-    </Text>
-  </View>
-);
-
-/* ─────────────────────────────────────────────────
- * BOTTOM TAB NAVIGATOR
+ * ROOT STACK NAVIGATOR
  * ───────────────────────────────────────────────── */
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const MainTabNavigator: React.FC = () => (
   <Tab.Navigator
-    screenOptions={{
+    screenOptions={({ route }) => ({
       headerShown: false,
       tabBarShowLabel: false,
+      tabBarActiveTintColor: COLORS.primary,
+      tabBarInactiveTintColor: '#888888',
       tabBarStyle: styles.tabBar,
-    }}
+      tabBarIcon: ({ focused, color, size }) => {
+        let iconName = 'help-circle'; // Fallback icon
+
+        if (route.name === 'Home') {
+          iconName = focused ? 'home' : 'home-outline';
+        } else if (route.name === 'Gallery') {
+          iconName = focused ? 'images' : 'images-outline';
+        } else if (route.name === 'Profile') {
+          iconName = focused ? 'person' : 'person-outline';
+        }
+
+        return <Icon name={iconName} size={size} color={color} />;
+      },
+    })}
   >
     <Tab.Screen
       name="Home"
       component={HomeScreen}
-      options={{
-        tabBarIcon: ({ focused }) => (
-          <TabIcon icon="🏠" label="Accueil" focused={focused} />
-        ),
-      }}
     />
     <Tab.Screen
       name="Gallery"
       component={GalleryScreen}
-      options={{
-        tabBarIcon: ({ focused }) => (
-          <TabIcon icon="🖼️" label="Galerie" focused={focused} />
-        ),
-      }}
     />
     <Tab.Screen
       name="Profile"
       component={ProfileScreen}
-      options={{
-        tabBarIcon: ({ focused }) => (
-          <TabIcon icon="👤" label="Profil" focused={focused} />
-        ),
-      }}
     />
   </Tab.Navigator>
 );
@@ -163,13 +138,6 @@ const styles = StyleSheet.create({
   },
   tabIconContainerActive: {
     backgroundColor: COLORS.primaryContainer,
-  },
-  tabIconEmoji: {
-    fontSize: 20,
-    marginBottom: 2,
-  },
-  tabIconEmojiActive: {
-    fontSize: 22,
   },
   tabLabel: {
     ...FONTS.labelSm,
