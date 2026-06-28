@@ -15,9 +15,10 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
+import { COLORS, SPACING, RADII, FONTS } from '../theme/colors';
 import { Header, AfroButton, MoodChip } from '../components/SharedComponents';
 import { sendContextText } from '../services/api';
 
@@ -32,9 +33,9 @@ interface MoodOption {
 }
 
 const MOOD_OPTIONS: MoodOption[] = [
-  { key: 'clash', label: 'Clash / Mbindi', icon: '⚡' },
-  { key: 'ndolo', label: 'Ndolo / Amour', icon: '❤️' },
-  { key: 'nyanga', label: 'Nyanga / Fierté', icon: '💎' },
+  { key: 'clash', label: 'Clash ', icon: '⚡' },
+  { key: 'ndolo', label: 'Entre loveurs', icon: '❤️' },
+  { key: 'nyanga', label: 'Nyanga', icon: '💎' },
   { key: 'sarcasme', label: 'Sarcasme Total', icon: '🎭' },
 ];
 
@@ -109,7 +110,7 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
         {/* Sélecteur de Mood */}
         <View style={styles.moodSection}>
           <Text style={styles.moodSectionLabel}>
-            ◉ CHOISIR LE NDOKI (MOOD)
+            ◉ CHOISIR LE MOOD :
           </Text>
           <View style={styles.moodGrid}>
             {MOOD_OPTIONS.map((mood) => (
@@ -136,7 +137,7 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
 
         {/* Info Card */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
+          <Ionicons name="information-circle-outline" size={20} color={COLORS.secondaryMid} style={{ marginRight: SPACING.xs, marginTop: 2 }} />
           <View style={styles.infoTextBlock}>
             <Text style={styles.infoText}>
               L'IA va scanner le sous-entendu, le sarcasme et la dose de "piment"
@@ -150,11 +151,11 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
           {isLoading ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Le ndem opère...</Text>
+              <Text style={styles.loadingText}>Le feeling opère...</Text>
             </View>
           ) : (
             <AfroButton
-              title="Laisser Gemini Analyser ✨"
+              title="Laisser L'IA Analyser"
               onPress={handleGenerate}
               color={COLORS.primary}
               disabled={!text.trim()}
@@ -233,11 +234,6 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     marginTop: SPACING.md,
     alignItems: 'flex-start',
-  },
-  infoIcon: {
-    fontSize: 20,
-    marginRight: SPACING.xs,
-    marginTop: 2,
   },
   infoTextBlock: {
     flex: 1,

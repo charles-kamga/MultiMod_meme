@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1032178390016",
+    "project_id": "monstreprojet",
+    "storage_bucket": "monstreprojet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032178390016:android:b7c351fc88345d3bd834e5",
+        "android_client_info": {
+          "package_name": "com.multimodalmemeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1032178390016-lnesnmupblpdrflm45sp221ap1l0h191.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVuj-7qMsj9lciRGEmi60LaZ7TOGhFBO4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1032178390016-lnesnmupblpdrflm45sp221ap1l0h191.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

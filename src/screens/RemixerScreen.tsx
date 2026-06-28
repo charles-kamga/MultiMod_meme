@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
   PermissionsAndroid,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -173,7 +174,7 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
           ) : (
             <View style={styles.emptyPreview}>
               <View style={styles.emptyIconCircle}>
-                <Text style={styles.emptyIcon}>🖼️</Text>
+                <Ionicons name="image-outline" size={28} color={COLORS.onSurfaceVariant} />
               </View>
               <Text style={styles.emptyText}>
                 Aucun média sélectionné. Capture l'instant ou choisis dans ta galerie.
@@ -189,7 +190,7 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
             onPress={handleSelectFromGallery}
             activeOpacity={0.85}
           >
-            <Text style={styles.mediaButtonIcon}>🖼️</Text>
+            <Ionicons name="images-outline" size={18} color={COLORS.white} style={{ marginRight: SPACING.xs }} />
             <Text style={styles.mediaButtonText}>Galerie</Text>
           </TouchableOpacity>
           <View style={styles.mediaButtonSpacer} />
@@ -198,7 +199,7 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
             onPress={handleTakeWithCamera}
             activeOpacity={0.85}
           >
-            <Text style={styles.mediaButtonIcon}>📷</Text>
+            <Ionicons name="camera-outline" size={18} color={COLORS.white} style={{ marginRight: SPACING.xs }} />
             <Text style={styles.mediaButtonText}>Photo</Text>
           </TouchableOpacity>
         </View>
@@ -217,13 +218,13 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setExpression}
               maxLength={100}
             />
-            <Text style={styles.expressionInputIcon}>文</Text>
+            <Ionicons name="text-outline" size={22} color={COLORS.onSurfaceVariant} />
           </View>
         </View>
 
         {/* Info Card */}
         <View style={styles.tipCard}>
-          <Text style={styles.tipIcon}>💡</Text>
+          <Ionicons name="bulb-outline" size={20} color={COLORS.secondaryMid} style={{ marginRight: SPACING.xs, marginTop: 2 }} />
           <View style={styles.tipContent}>
             <Text style={styles.tipTitle}>Astuce du Studio</Text>
             <Text style={styles.tipText}>
@@ -242,7 +243,7 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : (
             <AfroButton
-              title="Laisser Gemini Analyser ✨"
+              title="Laisser Gemini Analyser"
               onPress={handleSubmitRemix}
               color={COLORS.primary}
               disabled={!selectedImage}
@@ -292,9 +293,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: SPACING.sm,
   },
-  emptyIcon: {
-    fontSize: 28,
-  },
   emptyText: {
     ...FONTS.bodyMd,
     color: COLORS.onSurfaceVariant,
@@ -340,10 +338,6 @@ const styles = StyleSheet.create({
     borderRadius: RADII.md,
     ...ELEVATION.level1,
   },
-  mediaButtonIcon: {
-    fontSize: 18,
-    marginRight: SPACING.xs,
-  },
   mediaButtonText: {
     ...FONTS.labelLg,
     color: COLORS.white,
@@ -376,12 +370,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textMain,
   },
-  expressionInputIcon: {
-    fontSize: 22,
-    color: COLORS.onSurfaceVariant,
-    marginLeft: SPACING.xs,
-  },
-
   // Tip Card
   tipCard: {
     flexDirection: 'row',
@@ -390,11 +378,6 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     marginTop: SPACING.md,
     alignItems: 'flex-start',
-  },
-  tipIcon: {
-    fontSize: 20,
-    marginRight: SPACING.xs,
-    marginTop: 2,
   },
   tipContent: {
     flex: 1,

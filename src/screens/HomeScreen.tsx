@@ -1,46 +1,36 @@
 /**
- * Tâche 2 : Studio & Dashboard
- * Développeuse : Serena(Numero 85)
- * 
- * DESCRIPTION :
- * Ce module est le point d'entrée "Studio". Il permet de naviguer vers :
- * - Le Context Reader (Ryan)
- * - Le Voice-to-Meme (Samuel)
- * - Le Status Remixer (Yann)
- * 
- * J'ai utilisé une FlatList pour le carrousel afin de respecter l'objectif 
- * technique de fluidité demandé dans le cahier des charges.
+ * ÉCRAN : HomeScreen — Tableau de bord "Meme Studio"
+ * Affiche un carrousel d'astuces et une grille de 3 modes de création
+ * (Context Reader, Voice-to-Meme, Status Remixer).
+ * Point d'entrée principal après connexion.
  */
 
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  SafeAreaView, 
-  FlatList, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  FlatList,
   Dimensions,
   ScrollView,
-  StatusBar
+  StatusBar,
 } from 'react-native';
-
-// On utilise les couleurs du thème défini par Klod (Tâche 1).
-import { COLORS } from '../theme/colors'; 
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { COLORS, SPACING, RADII, FONTS, ELEVATION } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
-// Originalité : Contenu localisé (Le "Kwatt" Spirit)
 const INTRO_CAROUSEL = [
-  { id: '1', title: 'Le Jimpat de l\'IA 🧙‍♂️', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.', color: '#128C7E' },
-  { id: '2', title: 'Mode VOUP VAP 📸', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.', color: '#075E54' },
+  { id: '1', title: 'Le Jimpat de l\'IA', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.' },
+  { id: '2', title: 'Mode VOUP VAP', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.' },
 ];
 
 const HomeScreen = ({ navigation }: any) => {
-
-  // Rendu des cartes du carrousel
   const renderTip = ({ item }: any) => (
-    <View style={[styles.tipCard, { backgroundColor: item.color }]}>
+    <View style={styles.tipCard}>
+      <Ionicons name="flash" size={20} color={COLORS.white} style={{ marginBottom: 8 }} />
       <Text style={styles.tipTitle}>{item.title}</Text>
       <Text style={styles.tipText}>{item.text}</Text>
     </View>
@@ -50,22 +40,19 @@ const HomeScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <ScrollView showsVerticalScrollIndicator={false}>
-        
-        {/* Header : Accueil personnalisé */}
         <View style={styles.header}>
           <View>
             <Text style={styles.greet}>Meme Studio</Text>
-            <Text style={styles.appName}>AFROMEME 🇨🇲</Text>
+            <Text style={styles.appName}>AFROMEME</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.profileBtn}
             onPress={() => navigation.navigate('Profile')}
           >
-            <Text style={styles.profileInitial}>S</Text>
+            <Ionicons name="person-outline" size={20} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
 
-        {/* Carrousel d'astuces (Objectif technique Tâche 2) */}
         <View style={styles.carouselSection}>
           <FlatList
             data={INTRO_CAROUSEL}
@@ -77,40 +64,36 @@ const HomeScreen = ({ navigation }: any) => {
           />
         </View>
 
-        {/* STUDIO GRID : Les 3 portes d'entrée de l'application */}
         <View style={styles.studioGrid}>
           <Text style={styles.sectionTitle}>LABO DE CRÉATION</Text>
-          
+
           <View style={styles.gridRow}>
-            {/* Bouton vers Tâche 3 : Ryan */}
-            <TouchableOpacity 
-              style={styles.card} 
+            <TouchableOpacity
+              style={styles.card}
               onPress={() => navigation.navigate('Context')}
             >
-              <Text style={styles.cardIcon}>✍️</Text>
+              <Ionicons name="document-text-outline" size={32} color={COLORS.primary} style={{ marginBottom: 10 }} />
               <Text style={styles.cardTitle}>Context Reader</Text>
               <Text style={styles.cardSub}>Texte & Clashs</Text>
             </TouchableOpacity>
 
-            {/* Bouton vers Tâche 4 : Samuel */}
-            <TouchableOpacity 
-              style={[styles.card, styles.cardAudio]} 
+            <TouchableOpacity
+              style={styles.card}
               onPress={() => navigation.navigate('Voice')}
             >
-              <Text style={styles.cardIcon}>🎙️</Text>
+              <Ionicons name="mic-outline" size={32} color={COLORS.primary} style={{ marginBottom: 10 }} />
               <Text style={styles.cardTitle}>Voice-to-Meme</Text>
               <Text style={styles.cardSub}>Punchlines vocales</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Bouton vers Tâche 5 : Yann (Largeur totale) */}
-          <TouchableOpacity 
-            style={[styles.card, styles.cardFull]} 
+          <TouchableOpacity
+            style={styles.cardFull}
             onPress={() => navigation.navigate('Remixer')}
           >
             <View style={styles.cardFullContent}>
-              <Text style={styles.cardIcon}>🖼️</Text>
-              <View style={{marginLeft: 15}}>
+              <Ionicons name="image-outline" size={32} color={COLORS.primary} />
+              <View style={{ marginLeft: 15 }}>
                 <Text style={styles.cardTitle}>Status Remixer</Text>
                 <Text style={styles.cardSub}>Détourne les photos de ta galerie</Text>
               </View>
@@ -121,53 +104,116 @@ const HomeScreen = ({ navigation }: any) => {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Version 1.0 - ICT202 G2 - Groupe 8</Text>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    padding: 20 
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
-  greet: { fontSize: 14, color: '#AAA', fontWeight: '500' },
-  appName: { fontSize: 24, fontWeight: '900', color: '#1A1A1A' },
-  profileBtn: { 
-    width: 45, height: 45, borderRadius: 25, 
-    backgroundColor: '#F0F2F5', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: '#EEE'
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: SPACING.marginHorizontal,
   },
-  profileInitial: { fontWeight: 'bold', color: '#075E54' },
-  
-  carouselSection: { marginVertical: 10 },
-  tipCard: { 
-    width: width - 40, marginHorizontal: 20, 
-    borderRadius: 20, padding: 25, minHeight: 130, justifyContent: 'center' 
+  greet: {
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
   },
-  tipTitle: { color: '#FFF', fontWeight: 'bold', fontSize: 18, marginBottom: 5 },
-  tipText: { color: 'rgba(255,255,255,0.85)', fontSize: 14, lineHeight: 20 },
-
-  studioGrid: { padding: 20 },
-  sectionTitle: { fontSize: 12, fontWeight: '800', color: '#CCC', marginBottom: 15, letterSpacing: 1 },
-  gridRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
-  card: { 
-    backgroundColor: '#F8F9FA', width: '48%', padding: 20, 
-    borderRadius: 20, borderWidth: 1, borderColor: '#F0F0F0' 
+  appName: {
+    ...FONTS.headlineLgMobile,
+    color: COLORS.textMain,
   },
-  cardAudio: { backgroundColor: '#FFF9F2', borderColor: '#FFEAD2' },
-  cardFull: { width: '100%', backgroundColor: '#F2F6FF', borderColor: '#DCE7FF' },
-  cardFullContent: { flexDirection: 'row', alignItems: 'center' },
-  cardIcon: { fontSize: 32, marginBottom: 10 },
-  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-  cardSub: { fontSize: 12, color: '#888', marginTop: 2 },
-  
-  footer: { padding: 30, alignItems: 'center' },
-  footerText: { fontSize: 11, color: '#DDD' }
+  profileBtn: {
+    width: 45,
+    height: 45,
+    borderRadius: RADII.full,
+    backgroundColor: COLORS.surfaceContainer,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.outlineVariant,
+  },
+  carouselSection: {
+    marginVertical: SPACING.xs,
+  },
+  tipCard: {
+    width: width - SPACING.marginHorizontal * 2,
+    marginHorizontal: SPACING.marginHorizontal,
+    borderRadius: RADII.lg,
+    padding: 25,
+    minHeight: 130,
+    justifyContent: 'center',
+    backgroundColor: COLORS.secondary,
+  },
+  tipTitle: {
+    ...FONTS.headlineMd,
+    color: COLORS.white,
+    marginBottom: SPACING.base,
+  },
+  tipText: {
+    ...FONTS.bodyMd,
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: 20,
+  },
+  studioGrid: {
+    padding: SPACING.marginHorizontal,
+  },
+  sectionTitle: {
+    ...FONTS.labelSm,
+    color: COLORS.onSurfaceVariant,
+    marginBottom: SPACING.sm,
+    letterSpacing: 1,
+  },
+  gridRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.sm,
+  },
+  card: {
+    backgroundColor: COLORS.white,
+    width: '48%',
+    padding: SPACING.marginHorizontal,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHigh,
+    ...ELEVATION.level1,
+  },
+  cardFull: {
+    width: '100%',
+    backgroundColor: COLORS.white,
+    padding: SPACING.marginHorizontal,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHigh,
+    ...ELEVATION.level1,
+  },
+  cardFullContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardTitle: {
+    ...FONTS.bodyLg,
+    fontWeight: '700',
+    color: COLORS.textMain,
+  },
+  cardSub: {
+    ...FONTS.labelSm,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.base,
+  },
+  footer: {
+    padding: 30,
+    alignItems: 'center',
+  },
+  footerText: {
+    ...FONTS.labelSm,
+    color: COLORS.textSecondary,
+  },
 });
 
 export default HomeScreen;
