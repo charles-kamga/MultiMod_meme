@@ -42,7 +42,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     const result = await loginWithEmail(email, password);
     setLoading(false);
     if (result.success) {
-      navigation.replace('MainTabs');
+      // Navigué automatiquement par onAuthStateChanged dans AppNavigator
     } else {
       Alert.alert('Erreur', result.error);
     }

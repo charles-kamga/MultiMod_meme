@@ -153,32 +153,6 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
     }
   };
 
-  const handleShareWhatsApp = async () => {
-    setSharing(true);
-    try {
-      const uri = await captureView();
-      if (!uri) {
-        Alert.alert('Erreur', 'Impossible de capturer le mème.');
-        return;
-      }
-
-      await Share.shareSingle({
-        title: 'Mon meme IA',
-        message: meme.punchline || meme.bottomText || '',
-        url: uri,
-        type: 'image/png',
-       social: 'whatsapp' as any,
-      });
-    } catch {
-      Alert.alert(
-        'WhatsApp introuvable',
-        'WhatsApp n\'est pas installe sur cet appareil.',
-      );
-    } finally {
-      setSharing(false);
-    }
-  };
-
   const exportToWhatsAppSticker = async () => {
     setIsExporting(true);
     try {
@@ -227,7 +201,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ton Meme</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Gallery')}
+          onPress={() => navigation.navigate('MainTabs', { screen: 'Gallery' })}
           style={styles.galleryBtn}>
           <Ionicons name="images-outline" size={22} color="#FF6B35" />
         </TouchableOpacity>
@@ -287,20 +261,6 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
         <View style={styles.actionsContainer}>
 
           <TouchableOpacity
-            style={[styles.btn, styles.btnWhatsApp]}
-            onPress={handleShareWhatsApp}
-            disabled={sharing}>
-            {sharing ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Ionicons name="logo-whatsapp" size={18} color="#FFF" style={{marginRight: 8}} />
-                <Text style={styles.btnText}>Partager sur WhatsApp</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
             style={[styles.btn, styles.btnSticker]}
             onPress={exportToWhatsAppSticker}
             disabled={isExporting}>
@@ -330,7 +290,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
 
           <TouchableOpacity
             style={[styles.btn, styles.btnGallery]}
-            onPress={() => navigation.navigate('Gallery')}>
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Gallery' })}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Ionicons name="images-outline" size={18} color="#FFF" style={{marginRight: 8}} />
               <Text style={styles.btnText}>Voir ma galerie</Text>
@@ -477,8 +437,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnWhatsApp: {backgroundColor: '#25D366'},
-  btnSticker: {backgroundColor: '#075E54'},
+  btnSticker: {backgroundColor: '#25D366'},
   btnShare: {backgroundColor: '#FF6B35'},
   btnGallery: {backgroundColor: '#1E1E1E', borderWidth: 1, borderColor: '#333'},
   btnNew: {backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#FF6B35'},

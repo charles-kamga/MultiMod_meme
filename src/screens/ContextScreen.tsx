@@ -33,9 +33,9 @@ interface MoodOption {
 }
 
 const MOOD_OPTIONS: MoodOption[] = [
-  { key: 'clash', label: 'Clash / Mbindi', icon: '⚡' },
-  { key: 'ndolo', label: 'Ndolo / Amour', icon: '❤️' },
-  { key: 'nyanga', label: 'Nyanga / Fierté', icon: '💎' },
+  { key: 'clash', label: 'Clash ', icon: '⚡' },
+  { key: 'ndolo', label: 'Entre loveurs', icon: '❤️' },
+  { key: 'nyanga', label: 'Nyanga', icon: '💎' },
   { key: 'sarcasme', label: 'Sarcasme Total', icon: '🎭' },
 ];
 
@@ -110,7 +110,7 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
         {/* Sélecteur de Mood */}
         <View style={styles.moodSection}>
           <Text style={styles.moodSectionLabel}>
-            ◉ CHOISIR LE NDOKI (MOOD)
+            ◉ CHOISIR LE MOOD :
           </Text>
           <View style={styles.moodGrid}>
             {MOOD_OPTIONS.map((mood) => (
@@ -155,7 +155,7 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : (
             <AfroButton
-              title="Laisser Gemini Analyser"
+              title="Laisser L'IA Analyser"
               onPress={handleGenerate}
               color={COLORS.primary}
               disabled={!text.trim()}

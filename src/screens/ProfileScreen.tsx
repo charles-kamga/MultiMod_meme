@@ -62,10 +62,6 @@ export default function ProfileScreen({ navigation }: any) {
   const handleLogout = async () => {
     try {
       await auth().signOut();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
     } catch (error) {
       console.error("Erreur de dÃ©connexion :", error);
     }

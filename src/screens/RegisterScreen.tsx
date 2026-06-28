@@ -52,7 +52,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(false);
 
     if (result.success) {
-      navigation.replace('MainTabs');
+      // Navigué automatiquement par onAuthStateChanged dans AppNavigator
     } else {
       Alert.alert('Erreur', result.error);
     }
