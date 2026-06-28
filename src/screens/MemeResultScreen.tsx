@@ -16,6 +16,7 @@ import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
+import { COLORS, SPACING, RADII, FONTS, ELEVATION } from '../theme/colors';
 
 const getStorageKey = () => {
   const uid = auth().currentUser?.uid;
@@ -41,7 +42,7 @@ interface Props {
       punchlineBottom?: string;
       transcription?: string;
       source?: 'context' | 'voice' | 'remix';
-      sourceType?: 'voice' | 'context' | 'remix' | 'text' | 'audio' | 'image';
+      sourceType?: 'voice' | 'context' | 'remix' | 'text' | 'audio' | 'image' | 'gallery';
       resultData?: any;
     };
   };
@@ -167,7 +168,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
         message: meme.punchline || meme.bottomText || '',
         url: uri,
         type: 'image/png',
-        social: 'whatsappsticker',
+        social: 'whatsappsticker' as any,
       });
     } catch {
       Alert.alert(
@@ -193,24 +194,24 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#FF6B35" />
+          <Ionicons name="arrow-back" size={22} color={COLORS.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ton Meme</Text>
         <TouchableOpacity
           onPress={() => navigation.navigate('MainTabs', { screen: 'Gallery' })}
           style={styles.galleryBtn}>
-          <Ionicons name="images-outline" size={22} color="#FF6B35" />
+          <Ionicons name="images-outline" size={22} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={styles.sourceBadge}>
-          <Ionicons name={sourceIcon} size={12} color="#FF6B35" style={{marginRight: 4}} />
+          <Ionicons name={sourceIcon} size={12} color={COLORS.primary} style={{marginRight: 4}} />
           <Text style={styles.sourceBadgeText}>{sourceLabel}</Text>
         </View>
 
@@ -231,7 +232,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
               />
             ) : (
               <View style={styles.placeholderImage}>
-                <Ionicons name="happy-outline" size={80} color="#555" />
+                <Ionicons name="happy-outline" size={80} color={COLORS.surfaceContainerHigh} />
               </View>
             )}
 
@@ -253,7 +254,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
 
         {saved && (
           <View style={styles.savedRow}>
-            <Ionicons name="checkmark-circle" size={16} color="#4CAF50" style={{marginRight: 4}} />
+            <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} style={{marginRight: 4}} />
             <Text style={styles.savedHint}>Sauvegarde dans ta galerie</Text>
           </View>
         )}
@@ -268,7 +269,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
               <ActivityIndicator color="#fff" />
             ) : (
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Ionicons name="logo-whatsapp" size={18} color="#FFF" style={{marginRight: 8}} />
+                <Ionicons name="logo-whatsapp" size={18} color={COLORS.white} style={{marginRight: 8}} />
                 <Text style={styles.btnText}>Exporter en sticker</Text>
               </View>
             )}
@@ -282,7 +283,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
               <ActivityIndicator color="#fff" />
             ) : (
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Ionicons name="share-social-outline" size={18} color="#FFF" style={{marginRight: 8}} />
+                <Ionicons name="share-social-outline" size={18} color={COLORS.white} style={{marginRight: 8}} />
                 <Text style={styles.btnText}>Partager via...</Text>
               </View>
             )}
@@ -292,8 +293,8 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
             style={[styles.btn, styles.btnGallery]}
             onPress={() => navigation.navigate('MainTabs', { screen: 'Gallery' })}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Ionicons name="images-outline" size={18} color="#FFF" style={{marginRight: 8}} />
-              <Text style={styles.btnText}>Voir ma galerie</Text>
+              <Ionicons name="images-outline" size={18} color={COLORS.textMain} style={{marginRight: 8}} />
+              <Text style={[styles.btnText, {color: COLORS.textMain}]}>Voir ma galerie</Text>
             </View>
           </TouchableOpacity>
 
@@ -301,8 +302,8 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
             style={[styles.btn, styles.btnNew]}
             onPress={() => navigation.goBack()}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Ionicons name="refresh-outline" size={18} color="#FF6B35" style={{marginRight: 8}} />
-              <Text style={[styles.btnText, {color: '#FF6B35'}]}>
+              <Ionicons name="refresh-outline" size={18} color={COLORS.primary} style={{marginRight: 8}} />
+              <Text style={[styles.btnText, {color: COLORS.primary}]}>
                 Creer un nouveau meme
               </Text>
             </View>
@@ -317,60 +318,55 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? 16 : 50,
-    paddingBottom: 12,
-    backgroundColor: '#0D0D0D',
+    paddingHorizontal: SPACING.sm,
+    paddingTop: Platform.OS === 'android' ? SPACING.sm : 50,
+    paddingBottom: SPACING.xs,
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E1E1E',
+    borderBottomColor: COLORS.surfaceContainerHigh,
   },
   backBtn: {padding: 8},
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
+    ...FONTS.headlineMd,
+    color: COLORS.textMain,
   },
   galleryBtn: {padding: 8},
   scroll: {
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.sm,
     paddingBottom: 40,
     alignItems: 'center',
   },
   sourceBadge: {
-    marginTop: 16,
-    marginBottom: 12,
-    backgroundColor: '#1E1E1E',
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.xs,
+    backgroundColor: COLORS.surfaceContainer,
     paddingHorizontal: 14,
     paddingVertical: 5,
-    borderRadius: 20,
+    borderRadius: RADII.full,
     borderWidth: 1,
-    borderColor: '#FF6B35',
+    borderColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
   },
   sourceBadgeText: {
-    color: '#FF6B35',
-    fontSize: 12,
-    fontWeight: '700',
+    ...FONTS.labelSm,
+    color: COLORS.primary,
     letterSpacing: 1,
   },
   memeCard: {
     width: 340,
-    borderRadius: 16,
+    borderRadius: RADII.md,
     overflow: 'hidden',
-    backgroundColor: '#1A1A1A',
-    elevation: 8,
-    shadowColor: '#FF6B35',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHighest,
+    ...ELEVATION.level1,
   },
   memeImage: {
     width: '100%',
@@ -379,7 +375,7 @@ const styles = StyleSheet.create({
   placeholderImage: {
     width: '100%',
     height: 300,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: COLORS.surfaceContainer,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -392,7 +388,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   memeText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 18,
     fontWeight: '900',
     textAlign: 'center',
@@ -402,50 +398,55 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   punchlineBox: {
-    marginTop: 16,
-    backgroundColor: '#1A1A1A',
+    marginTop: SPACING.sm,
+    backgroundColor: COLORS.surfaceContainerLow,
     borderLeftWidth: 3,
-    borderLeftColor: '#FF6B35',
+    borderLeftColor: COLORS.primary,
     padding: 14,
-    borderRadius: 8,
+    borderRadius: RADII.sm,
     width: 340,
   },
   punchlineText: {
-    color: '#CCCCCC',
-    fontSize: 14,
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
     fontStyle: 'italic',
     lineHeight: 22,
   },
   savedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: SPACING.xs,
   },
   savedHint: {
-    color: '#4CAF50',
-    fontSize: 12,
-    fontWeight: '600',
+    ...FONTS.labelSm,
+    color: COLORS.primary,
   },
   actionsContainer: {
-    marginTop: 24,
+    marginTop: SPACING.md,
     width: '100%',
     gap: 12,
   },
   btn: {
-    borderRadius: 12,
-    paddingVertical: 15,
+    borderRadius: RADII.md,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },
   btnSticker: {backgroundColor: '#25D366'},
-  btnShare: {backgroundColor: '#FF6B35'},
-  btnGallery: {backgroundColor: '#1E1E1E', borderWidth: 1, borderColor: '#333'},
-  btnNew: {backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#FF6B35'},
+  btnShare: {backgroundColor: COLORS.primary},
+  btnGallery: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHighest,
+  },
+  btnNew: {
+    backgroundColor: COLORS.transparent,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+  },
   btnText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    ...FONTS.labelLg,
+    color: COLORS.white,
   },
 });
 

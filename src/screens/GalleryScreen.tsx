@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import {useFocusEffect} from '@react-navigation/native';
 import type {MemeResult} from './MemeResultScreen';
+import { COLORS, SPACING, RADII, FONTS, ELEVATION } from '../theme/colors';
 
 const getStorageKey = () => {
   const uid = auth().currentUser?.uid;
@@ -111,14 +112,14 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         <Image source={{uri: item.imageUri}} style={styles.cardImage} resizeMode="cover" />
       ) : (
         <View style={styles.cardPlaceholder}>
-          <Ionicons name="happy-outline" size={48} color="#555" />
+          <Ionicons name="happy-outline" size={48} color={COLORS.surfaceContainerHigh} />
         </View>
       )}
       <View style={styles.cardOverlay}>
         <Ionicons
           name={sourceIcons[item.sourceType] || 'help-circle-outline'}
           size={14}
-          color="#FF6B35"
+          color={COLORS.primary}
           style={{marginBottom: 2}}
         />
         {(item.bottomText || item.punchline) ? (
@@ -133,7 +134,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
 
   const EmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="images-outline" size={64} color="#555" />
+      <Ionicons name="images-outline" size={64} color={COLORS.surfaceContainerHigh} />
       <Text style={styles.emptyTitle}>Galerie vide</Text>
       <Text style={styles.emptySubtitle}>
         Tes mèmes générés apparaîtront ici automatiquement.
@@ -142,7 +143,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         style={styles.emptyBtn}
         onPress={() => navigation.goBack()}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Ionicons name="sparkles" size={16} color="#FFFFFF" style={{marginRight: 6}} />
+          <Ionicons name="sparkles" size={16} color={COLORS.white} style={{marginRight: 6}} />
           <Text style={styles.emptyBtnText}>Créer mon premier mème</Text>
         </View>
       </TouchableOpacity>
@@ -151,10 +152,10 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#FF6B35" />
+          <Ionicons name="arrow-back" size={22} color={COLORS.primary} />
         </TouchableOpacity>
         <View>
           <Text style={styles.headerTitle}>Ma Galerie</Text>
@@ -164,7 +165,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
         </View>
         {gallery.length > 0 ? (
           <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
-            <Ionicons name="trash-outline" size={22} color="#FF6B35" />
+            <Ionicons name="trash-outline" size={22} color={COLORS.primary} />
           </TouchableOpacity>
         ) : (
           <View style={{width: 40}} />
@@ -175,7 +176,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
       )}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B35" />
+          <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       ) : gallery.length === 0 ? (
         <EmptyState />
@@ -197,39 +198,39 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? 16 : 50,
-    paddingBottom: 12,
+    paddingHorizontal: SPACING.sm,
+    paddingTop: Platform.OS === 'android' ? SPACING.sm : 50,
+    paddingBottom: SPACING.xs,
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E1E1E',
+    borderBottomColor: COLORS.surfaceContainerHigh,
   },
   backBtn: {padding: 8},
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    ...FONTS.headlineMd,
+    color: COLORS.textMain,
     textAlign: 'center',
   },
   headerCount: {
-    fontSize: 12,
-    color: '#666',
+    ...FONTS.labelSm,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     marginTop: 2,
   },
   clearBtn: {padding: 8},
   hint: {
     textAlign: 'center',
-    color: '#444',
-    fontSize: 11,
+    color: COLORS.textSecondary,
+    ...FONTS.labelSm,
+    fontStyle: 'italic',
     marginTop: 8,
     marginBottom: 4,
-    fontStyle: 'italic',
   },
   loadingContainer: {
     flex: 1,
@@ -237,23 +238,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   listContent: {
-    padding: 16,
+    padding: SPACING.sm,
     paddingBottom: 40,
   },
   row: {
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: SPACING.sm,
   },
   card: {
     width: CARD_SIZE,
-    borderRadius: 12,
+    borderRadius: RADII.md,
     overflow: 'hidden',
-    backgroundColor: '#1A1A1A',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHighest,
+    ...ELEVATION.level1,
   },
   cardImage: {
     width: '100%',
@@ -262,25 +261,25 @@ const styles = StyleSheet.create({
   cardPlaceholder: {
     width: '100%',
     height: CARD_SIZE,
-    backgroundColor: '#222',
+    backgroundColor: COLORS.surfaceContainer,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.85)',
+    backgroundColor: COLORS.white,
     padding: 8,
   },
   cardPunchline: {
-    color: '#FFFFFF',
-    fontSize: 11,
+    ...FONTS.labelSm,
+    color: COLORS.textMain,
     fontWeight: '700',
     lineHeight: 15,
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   cardDate: {
-    color: '#555',
-    fontSize: 10,
+    ...FONTS.labelSm,
+    color: COLORS.textSecondary,
   },
   emptyContainer: {
     flex: 1,
@@ -289,29 +288,27 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   emptyTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    ...FONTS.headlineMd,
+    color: COLORS.textMain,
     marginBottom: 8,
-    marginTop: 16,
+    marginTop: SPACING.sm,
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: '#666',
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
   },
   emptyBtn: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 24,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.md,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: RADII.md,
   },
   emptyBtnText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
+    ...FONTS.labelLg,
+    color: COLORS.white,
   },
 });
 

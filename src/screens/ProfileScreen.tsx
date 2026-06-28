@@ -4,18 +4,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { COLORS, SPACING, RADII, FONTS, ELEVATION } from '../theme/colors';
 
 const getStorageKey = () => {
   const uid = auth().currentUser?.uid;
   return uid ? `memes_${uid}` : 'memes_guest';
-};
-
-const COLORS = {
-  primary: '#C84B31',
-  background: '#FAF6F0',
-  text: '#1A1A1A',
-  gray: '#888888',
-  cardBg: '#FFFFFF',
 };
 
 export default function ProfileScreen({ navigation }: any) {
@@ -69,7 +62,7 @@ export default function ProfileScreen({ navigation }: any) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      
+
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Mon Profil</Text>
       </View>
@@ -96,22 +89,22 @@ export default function ProfileScreen({ navigation }: any) {
       <View style={styles.menuContainer}>
         <TouchableOpacity style={styles.menuItem}>
           <View style={styles.menuItemLeft}>
-            <Ionicons name="settings-outline" size={22} color={COLORS.gray} />
+            <Ionicons name="settings-outline" size={22} color={COLORS.onSurfaceVariant} />
             <Text style={styles.menuItemText}>Mes paramètres</Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
+          <Ionicons name="chevron-forward" size={16} color={COLORS.onSurfaceVariant} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem}>
           <View style={styles.menuItemLeft}>
-            <Ionicons name="earth-outline" size={22} color={COLORS.gray} />
+            <Ionicons name="earth-outline" size={22} color={COLORS.onSurfaceVariant} />
             <Text style={styles.menuItemText}>Préférences de langue</Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
+          <Ionicons name="chevron-forward" size={16} color={COLORS.onSurfaceVariant} />
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.menuItem, styles.noBorder]} 
+        <TouchableOpacity
+          style={[styles.menuItem, styles.noBorder]}
           onPress={handleLogout}
         >
           <View style={styles.menuItemLeft}>
@@ -135,95 +128,79 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   headerContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.marginHorizontal,
+    paddingBottom: SPACING.xs,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    ...FONTS.headlineLgMobile,
     color: COLORS.primary,
   },
   avatarContainer: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: SPACING.marginHorizontal,
     marginBottom: 25,
   },
   initialsAvatar: {
     width: 110,
     height: 110,
-    borderRadius: 55,
-    backgroundColor: '#F3A953',
+    borderRadius: RADII.full,
+    backgroundColor: COLORS.accent,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    ...ELEVATION.level2,
     marginBottom: 15,
   },
   initialsText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    ...FONTS.displayLg,
+    color: COLORS.white,
     letterSpacing: 1,
   },
   userName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 4,
+    ...FONTS.headlineMd,
+    color: COLORS.textMain,
+    marginBottom: SPACING.base,
   },
   userSubtitle: {
-    fontSize: 14,
-    color: COLORS.gray,
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
   },
   statsContainer: {
-    backgroundColor: COLORS.cardBg,
-    borderRadius: 20,
-    marginHorizontal: 24,
-    paddingVertical: 20,
+    backgroundColor: COLORS.white,
+    borderRadius: RADII.lg,
+    marginHorizontal: SPACING.md,
+    paddingVertical: SPACING.marginHorizontal,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    ...ELEVATION.level1,
     marginBottom: 25,
   },
   statBox: {
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    ...FONTS.headlineLg,
+    color: COLORS.textMain,
   },
   statLabel: {
-    fontSize: 14,
-    color: COLORS.gray,
-    marginTop: 2,
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.base,
   },
   menuContainer: {
-    backgroundColor: COLORS.cardBg,
-    borderRadius: 20,
-    marginHorizontal: 24,
-    paddingHorizontal: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    backgroundColor: COLORS.white,
+    borderRadius: RADII.lg,
+    marginHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    ...ELEVATION.level1,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomColor: COLORS.surfaceContainerHigh,
   },
   noBorder: {
     borderBottomWidth: 0,
@@ -233,8 +210,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuItemText: {
-    fontSize: 16,
-    color: COLORS.text,
+    ...FONTS.bodyMd,
+    color: COLORS.textMain,
     marginLeft: 14,
     fontWeight: '500',
   },
