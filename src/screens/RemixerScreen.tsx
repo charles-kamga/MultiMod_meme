@@ -16,45 +16,103 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  PermissionsAndroid,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 import { Header, AfroButton } from '../components/SharedComponents';
-import {
-  requestStoragePermission,
-  requestCameraPermission,
-  showPermissionDeniedAlert,
-} from '../utils/permissions';
-import { generateFromImage } from '../services/api';
+import { sendImageRemix } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Remixer'>;
 
 const RemixerScreen: React.FC<Props> = ({ navigation }) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    uri: string;
+    fileName: string;
+    type: string;
+  } | null>(null);
   const [expression, setExpression] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handlePickFromGallery = async (): Promise<void> => {
-    const hasPermission = await requestStoragePermission();
-    if (!hasPermission) {
-      showPermissionDeniedAlert('Galerie Photos');
-      return;
+  const requestCameraPermission = async (): Promise<boolean> => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Permission Caméra',
+          message: 'L\'application a besoin d\'accéder à votre caméra pour prendre des photos.',
+          buttonNeutral: 'Plus tard',
+          buttonNegative: 'Refuser',
+          buttonPositive: 'Autoriser',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      console.warn(err);
+      return false;
     }
-
-    // Simuler la sélection d'image (dans un vrai projet: react-native-image-picker)
-    setSelectedImage('file:///data/user/0/com.multimodalmemeapp/cache/selected_image.jpg');
   };
 
-  const handleTakePhoto = async (): Promise<void> => {
+  const handleSelectFromGallery = async (): Promise<void> => {
+    try {
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        quality: 1,
+      });
+
+      if (result.didCancel) return;
+      if (result.errorCode) {
+        Alert.alert('Erreur Galerie', result.errorMessage || 'Impossible de charger l\'image.');
+        return;
+      }
+
+      if (result.assets && result.assets[0]) {
+        const asset = result.assets[0];
+        setSelectedImage({
+          uri: asset.uri || '',
+          fileName: asset.fileName || 'upload.jpg',
+          type: asset.type || 'image/jpeg',
+        });
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la sélection de l\'image.');
+    }
+  };
+
+  const handleTakeWithCamera = async (): Promise<void> => {
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
-      showPermissionDeniedAlert('Caméra');
+      Alert.alert('Permission Refusée', "L'accès à la caméra est nécessaire pour prendre une photo.");
       return;
     }
 
-    // Simuler la prise de photo
-    setSelectedImage('file:///data/user/0/com.multimodalmemeapp/cache/captured_photo.jpg');
+    try {
+      const result = await launchCamera({
+        mediaType: 'photo',
+        quality: 1,
+        saveToPhotos: true,
+      });
+
+      if (result.didCancel) return;
+      if (result.errorCode) {
+        Alert.alert('Erreur Caméra', result.errorMessage || 'Impossible de prendre la photo.');
+        return;
+      }
+
+      if (result.assets && result.assets[0]) {
+        const asset = result.assets[0];
+        setSelectedImage({
+          uri: asset.uri || '',
+          fileName: asset.fileName || 'upload.jpg',
+          type: asset.type || 'image/jpeg',
+        });
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la capture photo.');
+    }
   };
 
   const handleSubmitRemix = async (): Promise<void> => {
@@ -64,21 +122,24 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     setIsSubmitting(true);
-    const result = await generateFromImage(
-      selectedImage,
-      expression.trim() || undefined,
-    );
-    setIsSubmitting(false);
-
-    if (result.success && result.data) {
+    try {
+      const result = await sendImageRemix(
+        selectedImage.uri,
+        selectedImage.fileName,
+        selectedImage.type,
+        expression.trim(),
+      );
+      
       navigation.navigate('MemeResult', {
-        memeUrl: result.data.memeUrl,
-        punchlineTop: result.data.punchlineTop,
-        punchlineBottom: result.data.punchlineBottom,
-        source: 'remix',
+        sourceType: 'image',
+        punchline: result?.data?.punchline || result?.punchline || 'Remix réussi !',
+        imageUrl: result?.data?.generatedImage || result?.generatedImage || 'https://via.placeholder.com/500',
       });
-    } else {
-      Alert.alert('Erreur', result.error || 'Impossible de remixer l\'image.');
+    } catch (error: any) {
+      console.error('Erreur Remix:', error);
+      Alert.alert('Erreur', error.message || 'Impossible de remixer l\'image.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -98,22 +159,22 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.previewZone}>
           {selectedImage ? (
             <View style={styles.imagePreviewWrapper}>
-              <Image
-                source={{ uri: selectedImage }}
-                style={styles.imagePreview}
-                resizeMode="cover"
-              />
-              <TouchableOpacity
-                style={styles.removeImageBtn}
-                onPress={() => setSelectedImage(null)}
-              >
+            <Image
+              source={{ uri: selectedImage?.uri }}
+              style={styles.imagePreview}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              style={styles.removeImageBtn}
+              onPress={() => setSelectedImage(null)}
+            >
                 <Text style={styles.removeImageText}>✕</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.emptyPreview}>
               <View style={styles.emptyIconCircle}>
-                <Text style={styles.emptyIcon}>🖼️</Text>
+                <Ionicons name="image-outline" size={28} color={COLORS.onSurfaceVariant} />
               </View>
               <Text style={styles.emptyText}>
                 Aucun média sélectionné. Capture l'instant ou choisis dans ta galerie.
@@ -126,19 +187,19 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.mediaButtonsRow}>
           <TouchableOpacity
             style={[styles.mediaButton, { backgroundColor: COLORS.secondary }]}
-            onPress={handlePickFromGallery}
+            onPress={handleSelectFromGallery}
             activeOpacity={0.85}
           >
-            <Text style={styles.mediaButtonIcon}>🖼️</Text>
+            <Ionicons name="images-outline" size={18} color={COLORS.white} style={{ marginRight: SPACING.xs }} />
             <Text style={styles.mediaButtonText}>Galerie</Text>
           </TouchableOpacity>
           <View style={styles.mediaButtonSpacer} />
           <TouchableOpacity
             style={[styles.mediaButton, { backgroundColor: COLORS.tertiaryContainer }]}
-            onPress={handleTakePhoto}
+            onPress={handleTakeWithCamera}
             activeOpacity={0.85}
           >
-            <Text style={styles.mediaButtonIcon}>📷</Text>
+            <Ionicons name="camera-outline" size={18} color={COLORS.white} style={{ marginRight: SPACING.xs }} />
             <Text style={styles.mediaButtonText}>Photo</Text>
           </TouchableOpacity>
         </View>
@@ -157,13 +218,13 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setExpression}
               maxLength={100}
             />
-            <Text style={styles.expressionInputIcon}>文</Text>
+            <Ionicons name="text-outline" size={22} color={COLORS.onSurfaceVariant} />
           </View>
         </View>
 
         {/* Info Card */}
         <View style={styles.tipCard}>
-          <Text style={styles.tipIcon}>💡</Text>
+          <Ionicons name="bulb-outline" size={20} color={COLORS.secondaryMid} style={{ marginRight: SPACING.xs, marginTop: 2 }} />
           <View style={styles.tipContent}>
             <Text style={styles.tipTitle}>Astuce du Studio</Text>
             <Text style={styles.tipText}>
@@ -182,7 +243,7 @@ const RemixerScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : (
             <AfroButton
-              title="Laisser Gemini Analyser ✨"
+              title="Laisser Gemini Analyser"
               onPress={handleSubmitRemix}
               color={COLORS.primary}
               disabled={!selectedImage}
@@ -232,9 +293,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: SPACING.sm,
   },
-  emptyIcon: {
-    fontSize: 28,
-  },
   emptyText: {
     ...FONTS.bodyMd,
     color: COLORS.onSurfaceVariant,
@@ -280,10 +338,6 @@ const styles = StyleSheet.create({
     borderRadius: RADII.md,
     ...ELEVATION.level1,
   },
-  mediaButtonIcon: {
-    fontSize: 18,
-    marginRight: SPACING.xs,
-  },
   mediaButtonText: {
     ...FONTS.labelLg,
     color: COLORS.white,
@@ -316,12 +370,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textMain,
   },
-  expressionInputIcon: {
-    fontSize: 22,
-    color: COLORS.onSurfaceVariant,
-    marginLeft: SPACING.xs,
-  },
-
   // Tip Card
   tipCard: {
     flexDirection: 'row',
@@ -330,11 +378,6 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     marginTop: SPACING.md,
     alignItems: 'flex-start',
-  },
-  tipIcon: {
-    fontSize: 20,
-    marginRight: SPACING.xs,
-    marginTop: 2,
   },
   tipContent: {
     flex: 1,

@@ -15,12 +15,14 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 import { Header, AfroButton } from '../components/SharedComponents';
 import { requestMicrophonePermission, showPermissionDeniedAlert } from '../utils/permissions';
 import { generateFromVoice } from '../services/api';
+import AudioRecorderPlayer, { RecordBackType, PlayBackType } from 'react-native-nitro-sound';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Voice'>;
 
@@ -32,8 +34,23 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [capturedFilePath, setCapturedFilePath] = useState<string>('');
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // États de la prévisualisation de la lecture
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [playbackProgress, setPlaybackProgress] = useState<number>(0);
+
+  const audioRecorderPlayer = AudioRecorderPlayer;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const spinAnim = useRef(new Animated.Value(0)).current;
+
+  // Nettoyer l'enregistreur et le lecteur audio lors du démontage
+  useEffect(() => {
+    return () => {
+      audioRecorderPlayer.stopRecorder();
+      audioRecorderPlayer.removeRecordBackListener();
+      audioRecorderPlayer.stopPlayer();
+      audioRecorderPlayer.removePlayBackListener();
+    };
+  }, [audioRecorderPlayer]);
 
   // Animation de pulsation pendant l'enregistrement
   useEffect(() => {
@@ -59,6 +76,24 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [recordingState, pulseAnim]);
 
+  // Animation de rotation du chrono pendant l'enregistrement
+  useEffect(() => {
+    if (recordingState === 'recording') {
+      const spin = Animated.loop(
+        Animated.timing(spinAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+          isInteraction: false,
+        }),
+      );
+      spin.start();
+      return () => spin.stop();
+    } else {
+      spinAnim.setValue(0);
+    }
+  }, [recordingState, spinAnim]);
+
   const formatTime = (totalSeconds: number): string => {
     const mins = Math.floor(totalSeconds / 60)
       .toString()
@@ -74,31 +109,82 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    setRecordingState('recording');
-    setSeconds(0);
+    try {
+      setRecordingState('recording');
+      setSeconds(0);
 
-    // Simuler le timer (dans un vrai projet, on utiliserait react-native-audio-recorder-player)
-    timerRef.current = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
-  }, []);
+      // Démarrer l'enregistrement. Le chemin est indéfini par défaut pour laisser la bibliothèque choisir le chemin interne par défaut.
+      const uri = await audioRecorderPlayer.startRecorder();
+      console.log('Enregistrement démarré à :', uri);
 
-  const stopRecording = useCallback((): void => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+      audioRecorderPlayer.addRecordBackListener((e: RecordBackType) => {
+        setSeconds(Math.floor(e.currentPosition / 1000));
+      });
+    } catch (err) {
+      console.error('Impossible de démarrer l\'enregistrement', err);
+      Alert.alert('Erreur', 'Impossible de démarrer l\'enregistrement.');
+      setRecordingState('ready');
     }
+  }, [audioRecorderPlayer]);
 
-    // Simuler un chemin de fichier capturé
-    setCapturedFilePath('/data/user/0/com.multimodalmemeapp/cache/recording.m4a');
-    setRecordingState('captured');
-  }, []);
+  const stopRecording = useCallback(async (): Promise<void> => {
+    try {
+      const uri = await audioRecorderPlayer.stopRecorder();
+      audioRecorderPlayer.removeRecordBackListener();
+      console.log('Enregistrement arrêté. Fichier enregistré à :', uri);
+
+      setCapturedFilePath(uri);
+      setRecordingState('captured');
+    } catch (err) {
+      console.error('Impossible d\'arrêter l\'enregistrement', err);
+      Alert.alert('Erreur', 'Impossible d\'arrêter l\'enregistrement.');
+    }
+  }, [audioRecorderPlayer]);
+
+  const startPlay = useCallback(async (): Promise<void> => {
+    if (!capturedFilePath) {
+      return;
+    }
+    try {
+      setIsPlaying(true);
+      await audioRecorderPlayer.startPlayer(capturedFilePath);
+      audioRecorderPlayer.addPlayBackListener((e: PlayBackType) => {
+        if (e.currentPosition === e.duration) {
+          audioRecorderPlayer.stopPlayer();
+          audioRecorderPlayer.removePlayBackListener();
+          setIsPlaying(false);
+          setPlaybackProgress(1);
+        } else {
+          setPlaybackProgress(e.currentPosition / e.duration);
+        }
+      });
+    } catch (err) {
+      console.error('Erreur de lecture', err);
+      setIsPlaying(false);
+    }
+  }, [capturedFilePath, audioRecorderPlayer]);
+
+  const stopPlay = useCallback(async (): Promise<void> => {
+    try {
+      await audioRecorderPlayer.stopPlayer();
+      audioRecorderPlayer.removePlayBackListener();
+      setIsPlaying(false);
+      setPlaybackProgress(0);
+    } catch (err) {
+      console.error('Impossible d\'arrêter la lecture', err);
+    }
+  }, [audioRecorderPlayer]);
 
   const discardRecording = useCallback((): void => {
+    audioRecorderPlayer.stopPlayer();
+    audioRecorderPlayer.removePlayBackListener();
+    setIsPlaying(false);
+    setPlaybackProgress(0);
+
     setRecordingState('ready');
     setSeconds(0);
     setCapturedFilePath('');
-  }, []);
+  }, [audioRecorderPlayer]);
 
   const handleMicPress = (): void => {
     if (recordingState === 'ready') {
@@ -114,16 +200,17 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     setIsSubmitting(true);
+    if (isPlaying) {
+      await stopPlay();
+    }
+
     const result = await generateFromVoice(capturedFilePath);
     setIsSubmitting(false);
 
     if (result.success && result.data) {
       navigation.navigate('MemeResult', {
-        memeUrl: result.data.memeUrl,
-        punchlineTop: result.data.punchlineTop,
-        punchlineBottom: result.data.punchlineBottom,
-        transcription: result.data.transcription,
-        source: 'voice',
+        sourceType: 'voice',
+        resultData: result.data,
       });
     } else {
       Alert.alert('Erreur', result.error || 'Impossible de traiter l\'audio.');
@@ -132,7 +219,12 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
 
   const micButtonColor =
     recordingState === 'recording' ? COLORS.primary : COLORS.secondary;
-  const micIcon = recordingState === 'recording' ? '⏹️' : '🎤';
+  const micIconName = recordingState === 'recording' ? 'stop-circle' : 'mic';
+
+  const spin = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -143,9 +235,9 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
       />
 
       <View style={styles.mainContent}>
-        {/* Zone centrale micro */}
+        {/* Zone centrale du micro */}
         <View style={styles.micZone}>
-          {/* Anneaux de pulsation (visibles pendant l'enregistrement) */}
+          {/* Anneaux de pulsation pendant l'enregistrement */}
           {recordingState === 'recording' && (
             <>
               <Animated.View
@@ -177,28 +269,38 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
             onPress={handleMicPress}
             activeOpacity={0.85}
           >
-            <Text style={styles.micIcon}>{micIcon}</Text>
+            <Ionicons name={micIconName} size={56} color={COLORS.white} />
           </TouchableOpacity>
 
-          {/* Timer */}
-          <Text style={styles.timerDisplay}>{formatTime(seconds)}</Text>
+          {/* Affichage du timer avec icône d'horloge rotative */}
+          <View style={styles.timerRow}>
+            {recordingState === 'recording' && (
+              <Animated.View style={{ transform: [{ rotate: spin }], marginRight: SPACING.xs }}>
+                <Ionicons name="time-outline" size={20} color={COLORS.onSurfaceVariant} />
+              </Animated.View>
+            )}
+            <Text style={styles.timerDisplay}>{formatTime(seconds)}</Text>
+          </View>
         </View>
 
-        {/* Zone "capturé" — Lecteur audio + Poubelle */}
+        {/* Zone de capture — Lecteur audio + Corbeille */}
         {recordingState === 'captured' && (
           <View style={styles.capturedZone}>
             <View style={styles.audioPlayer}>
-              <TouchableOpacity style={styles.playButton}>
-                <Text style={styles.playIcon}>▶️</Text>
+              <TouchableOpacity
+                style={styles.playButton}
+                onPress={isPlaying ? stopPlay : startPlay}
+              >
+                <Ionicons name={isPlaying ? 'pause' : 'play'} size={20} color={COLORS.white} />
               </TouchableOpacity>
               <View style={styles.progressBar}>
-                <View style={styles.progressFill} />
+                <View style={[styles.progressFill, { width: `${playbackProgress * 100}%` }]} />
               </View>
               <TouchableOpacity
                 style={styles.trashButton}
                 onPress={discardRecording}
               >
-                <Text style={styles.trashIcon}>🗑️</Text>
+                <Ionicons name="trash-outline" size={22} color={COLORS.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
 
@@ -211,7 +313,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         )}
 
-        {/* Texte d'aide contextuel */}
+        {/* Texte d'aide contextuelle */}
         {recordingState !== 'captured' && (
           <View style={styles.hintSection}>
             <Text style={styles.hintText}>
@@ -223,7 +325,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
         )}
       </View>
 
-      {/* Footer actions (visible si capturé) */}
+      {/* Bouton d'action en bas */}
       {recordingState === 'captured' && (
         <View style={styles.footer}>
           {isSubmitting ? (
@@ -233,7 +335,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : (
             <AfroButton
-              title="Envoyer l'Audio à l'IA ✨"
+              title="Envoyer l'Audio à l'IA"
               onPress={handleSubmitAudio}
               color={COLORS.primary}
             />
@@ -288,13 +390,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...ELEVATION.level2,
   },
-  micIcon: {
-    fontSize: 56,
+  timerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: SPACING.lg,
   },
   timerDisplay: {
     ...FONTS.labelLg,
     color: COLORS.onSurfaceVariant,
-    marginTop: SPACING.lg,
     letterSpacing: 3,
     fontSize: 18,
   },
@@ -323,9 +427,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...ELEVATION.level1,
   },
-  playIcon: {
-    fontSize: 20,
-  },
   progressBar: {
     flex: 1,
     height: 4,
@@ -342,9 +443,6 @@ const styles = StyleSheet.create({
   },
   trashButton: {
     padding: SPACING.xs,
-  },
-  trashIcon: {
-    fontSize: 22,
   },
   transcriptionStatus: {
     flexDirection: 'row',

@@ -1,162 +1,108 @@
 /**
- * ÉCRAN : HomeScreen — Dashboard Afro-Vibe Interactif
- * Tableau de bord avec 3 cartes d'accès rapide multimodales + carrousel mèmes récents.
- * Inspiré de la maquette `dashboard_afro_vibe_interactive/screen.png`
+ * ÉCRAN : HomeScreen — Tableau de bord "Meme Studio"
+ * Affiche un carrousel d'astuces et une grille de 3 modes de création
+ * (Context Reader, Voice-to-Meme, Status Remixer).
+ * Point d'entrée principal après connexion.
  */
 
 import React from 'react';
 import {
   View,
   Text,
-  ScrollView,
+  StyleSheet,
   TouchableOpacity,
   SafeAreaView,
-  StyleSheet,
+  FlatList,
   Dimensions,
+  ScrollView,
+  StatusBar,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { RootStackParamList, MainTabParamList } from '../navigation/types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { Header, FeatureCard } from '../components/SharedComponents';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { COLORS, SPACING, RADII, FONTS, ELEVATION } from '../theme/colors';
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Home'>,
-  NativeStackScreenProps<RootStackParamList>
->;
+const { width } = Dimensions.get('window');
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CAROUSEL_ITEM_WIDTH = SCREEN_WIDTH * 0.6;
-
-const RECENT_MEMES = [
-  {
-    id: '1',
-    quote: '"Quand tu dis que tu arrives et tu es encore au lit..."',
-    author: 'MK',
-    trending: true,
-  },
-  {
-    id: '2',
-    quote: '"Le ndem est fort cette semaine ooh!"',
-    author: 'AB',
-    trending: false,
-  },
-  {
-    id: '3',
-    quote: '"Moi face au miondo de midi..."',
-    author: 'LL',
-    trending: false,
-  },
+const INTRO_CAROUSEL = [
+  { id: '1', title: 'Le Jimpat de l\'IA', text: 'Transforme tes bad clashs WhatsApp en memes légendaires.' },
+  { id: '2', title: 'Mode VOUP VAP', text: 'take ton mola en photo et Ndem l\'IA gérer la punchline.' },
 ];
 
-const HomeScreen: React.FC<Props> = ({ navigation }) => {
+const HomeScreen = ({ navigation }: any) => {
+  const renderTip = ({ item }: any) => (
+    <View style={styles.tipCard}>
+      <Ionicons name="flash" size={20} color={COLORS.white} style={{ marginBottom: 8 }} />
+      <Text style={styles.tipTitle}>{item.title}</Text>
+      <Text style={styles.tipText}>{item.text}</Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* En-tête */}
-        <Header
-          title="Akié ! Quel est le ndem du jour ?"
-          subtitle="Laisse ta créativité parler pour le kwatt."
-          showAvatar
-        />
-
-        {/* Section Fonctionnalités */}
-        <View style={styles.cardsSection}>
-          {/* Context Reader — Carte large */}
-          <FeatureCard
-            title="Colle les discussions"
-            description="Transforme les screens du kwatt en memes de clash ou de ndolo légendaires."
-            icon="📄"
-            accentColor={COLORS.primary}
-            badge="Context Reader"
-            onPress={() => navigation.navigate('Context')}
-            variant="large"
-          />
-
-          {/* Cartes compactes en row */}
-          <View style={styles.compactRow}>
-            <FeatureCard
-              title="Voice-to-Meme"
-              description="Audio → Punchline imagée."
-              icon="🎤"
-              accentColor={COLORS.secondary}
-              onPress={() => navigation.navigate('Voice')}
-              variant="compact"
-            />
-            <View style={styles.compactSpacer} />
-            <FeatureCard
-              title="Status Remixer"
-              description="Upload & Remix unique."
-              icon="📷"
-              accentColor={COLORS.tertiaryContainer}
-              onPress={() => navigation.navigate('Remixer')}
-              variant="compact"
-            />
+      <StatusBar barStyle="dark-content" />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greet}>Meme Studio</Text>
+            <Text style={styles.appName}>AFROMEME</Text>
           </View>
+          <TouchableOpacity
+            style={styles.profileBtn}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Ionicons name="person-outline" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
         </View>
 
-        {/* Mèmes Récents du Kwatt */}
-        <View style={styles.recentSection}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Mèmes Récents du Kwatt</Text>
+        <View style={styles.carouselSection}>
+          <FlatList
+            data={INTRO_CAROUSEL}
+            renderItem={renderTip}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+          />
+        </View>
+
+        <View style={styles.studioGrid}>
+          <Text style={styles.sectionTitle}>LABO DE CRÉATION</Text>
+
+          <View style={styles.gridRow}>
             <TouchableOpacity
-              onPress={() => navigation.navigate('Gallery')}
-              activeOpacity={0.7}
+              style={styles.card}
+              onPress={() => navigation.navigate('Context')}
             >
-              <Text style={styles.seeAllText}>Voir tout</Text>
+              <Ionicons name="document-text-outline" size={32} color={COLORS.primary} style={{ marginBottom: 10 }} />
+              <Text style={styles.cardTitle}>Context Reader</Text>
+              <Text style={styles.cardSub}>Texte & Clashs</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => navigation.navigate('Voice')}
+            >
+              <Ionicons name="mic-outline" size={32} color={COLORS.primary} style={{ marginBottom: 10 }} />
+              <Text style={styles.cardTitle}>Voice-to-Meme</Text>
+              <Text style={styles.cardSub}>Punchlines vocales</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.carouselContent}
-            snapToInterval={CAROUSEL_ITEM_WIDTH + SPACING.sm}
-            decelerationRate="fast"
+          <TouchableOpacity
+            style={styles.cardFull}
+            onPress={() => navigation.navigate('Remixer')}
           >
-            {RECENT_MEMES.map((meme) => (
-              <View key={meme.id} style={styles.carouselCard}>
-                {/* Image placeholder */}
-                <View style={styles.carouselImage}>
-                  {meme.trending && (
-                    <View style={styles.trendingBadge}>
-                      <Text style={styles.trendingText}>Trending 🔥</Text>
-                    </View>
-                  )}
-                </View>
-                {/* Contenu */}
-                <View style={styles.carouselBody}>
-                  <Text style={styles.carouselQuote} numberOfLines={2}>
-                    {meme.quote}
-                  </Text>
-                  <View style={styles.carouselFooter}>
-                    <View
-                      style={[
-                        styles.authorBubble,
-                        {
-                          backgroundColor:
-                            meme.id === '1'
-                              ? COLORS.secondary
-                              : meme.id === '2'
-                                ? COLORS.tertiary
-                                : COLORS.primary,
-                        },
-                      ]}
-                    >
-                      <Text style={styles.authorInitials}>{meme.author}</Text>
-                    </View>
-                    <TouchableOpacity style={styles.shareBtn}>
-                      <Text style={styles.shareIcon}>↗️</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+            <View style={styles.cardFullContent}>
+              <Ionicons name="image-outline" size={32} color={COLORS.primary} />
+              <View style={{ marginLeft: 15 }}>
+                <Text style={styles.cardTitle}>Status Remixer</Text>
+                <Text style={styles.cardSub}>Détourne les photos de ta galerie</Text>
               </View>
-            ))}
-          </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Version 1.0 - ICT202 G2 - Groupe 8</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -168,112 +114,105 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  scrollContent: {
-    paddingBottom: SPACING.xl + SPACING.lg,
-  },
-
-  // Cards Section
-  cardsSection: {
-    paddingHorizontal: SPACING.marginHorizontal,
-    paddingTop: SPACING.md,
-  },
-  compactRow: {
-    flexDirection: 'row',
-    marginTop: SPACING.sm,
-  },
-  compactSpacer: {
-    width: SPACING.sm,
-  },
-
-  // Recent Memes
-  recentSection: {
-    marginTop: SPACING.xl,
-    paddingLeft: SPACING.marginHorizontal,
-  },
-  sectionHeaderRow: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingRight: SPACING.marginHorizontal,
-    marginBottom: SPACING.sm,
+    padding: SPACING.marginHorizontal,
+  },
+  greet: {
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
+  },
+  appName: {
+    ...FONTS.headlineLgMobile,
+    color: COLORS.textMain,
+  },
+  profileBtn: {
+    width: 45,
+    height: 45,
+    borderRadius: RADII.full,
+    backgroundColor: COLORS.surfaceContainer,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.outlineVariant,
+  },
+  carouselSection: {
+    marginVertical: SPACING.xs,
+  },
+  tipCard: {
+    width: width - SPACING.marginHorizontal * 2,
+    marginHorizontal: SPACING.marginHorizontal,
+    borderRadius: RADII.lg,
+    padding: 25,
+    minHeight: 130,
+    justifyContent: 'center',
+    backgroundColor: COLORS.secondary,
+  },
+  tipTitle: {
+    ...FONTS.headlineMd,
+    color: COLORS.white,
+    marginBottom: SPACING.base,
+  },
+  tipText: {
+    ...FONTS.bodyMd,
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: 20,
+  },
+  studioGrid: {
+    padding: SPACING.marginHorizontal,
   },
   sectionTitle: {
-    ...FONTS.headlineMd,
-    color: COLORS.textMain,
-  },
-  seeAllText: {
-    ...FONTS.labelLg,
-    color: COLORS.primary,
-  },
-
-  // Carousel
-  carouselContent: {
-    paddingRight: SPACING.marginHorizontal,
-  },
-  carouselCard: {
-    width: CAROUSEL_ITEM_WIDTH,
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
-    overflow: 'hidden',
-    marginRight: SPACING.sm,
-    ...ELEVATION.level1,
-  },
-  carouselImage: {
-    width: '100%',
-    height: 160,
-    backgroundColor: COLORS.surfaceContainer,
-    position: 'relative',
-  },
-  trendingBadge: {
-    position: 'absolute',
-    top: SPACING.xs,
-    left: SPACING.xs,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    paddingHorizontal: SPACING.xs,
-    paddingVertical: 3,
-    borderRadius: RADII.full,
-  },
-  trendingText: {
     ...FONTS.labelSm,
-    color: COLORS.white,
-    fontSize: 10,
+    color: COLORS.onSurfaceVariant,
+    marginBottom: SPACING.sm,
+    letterSpacing: 1,
   },
-  carouselBody: {
-    padding: SPACING.sm,
-  },
-  carouselQuote: {
-    ...FONTS.labelLg,
-    color: COLORS.textMain,
-    fontStyle: 'italic',
-    marginBottom: SPACING.xs,
-  },
-  carouselFooter: {
+  gridRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: SPACING.sm,
+  },
+  card: {
+    backgroundColor: COLORS.white,
+    width: '48%',
+    padding: SPACING.marginHorizontal,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHigh,
+    ...ELEVATION.level1,
+  },
+  cardFull: {
+    width: '100%',
+    backgroundColor: COLORS.white,
+    padding: SPACING.marginHorizontal,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHigh,
+    ...ELEVATION.level1,
+  },
+  cardFullContent: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  authorBubble: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+  cardTitle: {
+    ...FONTS.bodyLg,
+    fontWeight: '700',
+    color: COLORS.textMain,
   },
-  authorInitials: {
+  cardSub: {
     ...FONTS.labelSm,
-    color: COLORS.white,
-    fontSize: 10,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.base,
   },
-  shareBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.surfaceContainerHighest,
+  footer: {
+    padding: 30,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  shareIcon: {
-    fontSize: 14,
+  footerText: {
+    ...FONTS.labelSm,
+    color: COLORS.textSecondary,
   },
 });
 

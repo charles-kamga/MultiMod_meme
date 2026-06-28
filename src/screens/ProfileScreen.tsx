@@ -1,313 +1,229 @@
 /**
- * ÉCRAN : ProfileScreen — Mon Profil Afro-Vibe
- * Page profil utilisateur avec avatar, stats, et menu de paramètres.
- * Inspiré de la maquette `mon_profil_afro_vibe/screen.png` et du code de référence.
+ * ÉCRAN : ProfileScreen — Profil utilisateur
+ * Affiche les informations du compte (nom, email, avatar avec initiales),
+ * le nombre de mèmes générés (issu d'AsyncStorage) et les options
+ * de paramètres, langue et déconnexion.
  */
 
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { RootStackParamList, MainTabParamList } from '../navigation/types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { Header } from '../components/SharedComponents';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { COLORS, SPACING, RADII, FONTS, ELEVATION } from '../theme/colors';
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Profile'>,
-  NativeStackScreenProps<RootStackParamList>
->;
+const getStorageKey = () => {
+  const uid = auth().currentUser?.uid;
+  return uid ? `memes_${uid}` : 'memes_guest';
+};
 
-interface StatItem {
-  value: string;
-  label: string;
-}
+export default function ProfileScreen({ navigation }: any) {
+  const [memeCount, setMemeCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-interface MenuItem {
-  label: string;
-  icon: string;
-  action?: () => void;
-}
+  const user = auth().currentUser;
+  const userEmail = user?.email || 'Utilisateur';
+  const userName = user?.displayName || userEmail.split('@')[0];
 
-const STATS: StatItem[] = [
-  { value: '1.2k', label: 'Mèmes' },
-  { value: '8.4k', label: 'Partages' },
-  { value: '342', label: 'Favoris' },
-];
+  const getInitials = () => {
+    if (user?.displayName) {
+      const names = user.displayName.split(' ');
+      if (names.length > 1) {
+        return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      }
+      return names[0].substring(0, 2).toUpperCase();
+    }
+    return userEmail.substring(0, 2).toUpperCase();
+  };
 
-const ProfileScreen: React.FC<Props> = ({ navigation }) => {
-  const MENU_ITEMS: MenuItem[] = [
-    { label: 'Mes paramètres', icon: '⚙️' },
-    { label: 'Préférences de langue', icon: '🌍' },
-    { label: "Centre d'aide", icon: '❓' },
-    { label: 'Inviter un ami', icon: '📨' },
-    {
-      label: 'Déconnexion',
-      icon: '🚪',
-      action: () => {
-        Alert.alert(
-          'Déconnexion',
-          'Tu es sûr de vouloir quitter le kwatt ?',
-          [
-            { text: 'Annuler', style: 'cancel' },
-            {
-              text: 'Oui, je sors',
-              style: 'destructive',
-              onPress: () => navigation.getParent()?.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              }),
-            },
-          ],
-        );
-      },
-    },
-  ];
+  useFocusEffect(
+    useCallback(() => {
+      const fetchRealMemeCount = async () => {
+        try {
+          const savedMemesRaw = await AsyncStorage.getItem(getStorageKey());
+          if (savedMemesRaw) {
+            const savedMemesArray = JSON.parse(savedMemesRaw);
+            setMemeCount(savedMemesArray.length);
+          } else {
+            setMemeCount(0);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération des mèmes :", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchRealMemeCount();
+    }, [])
+  );
+
+  const handleLogout = async () => {
+    try {
+      await auth().signOut();
+    } catch (error) {
+      console.error("Erreur de déconnexion :", error);
+    }
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header title="Mon Profil" />
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Section Profil */}
-        <View style={styles.profileSection}>
-          {/* Avatar */}
-          <View style={styles.avatarWrapper}>
-            <View style={styles.largeAvatar}>
-              <Text style={styles.avatarEmoji}>👤</Text>
-            </View>
-            <TouchableOpacity style={styles.editAvatarButton}>
-              <Text style={styles.editAvatarIcon}>✏️</Text>
-            </TouchableOpacity>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Mon Profil</Text>
+      </View>
+
+      <View style={styles.avatarContainer}>
+        <View style={styles.initialsAvatar}>
+          <Text style={styles.initialsText}>{getInitials()}</Text>
+        </View>
+        <Text style={styles.userName}>{userName}</Text>
+        <Text style={styles.userSubtitle}>{userEmail}</Text>
+      </View>
+
+      <View style={styles.statsContainer}>
+        <View style={styles.statBox}>
+          {loading ? (
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          ) : (
+            <Text style={styles.statNumber}>{memeCount}</Text>
+          )}
+          <Text style={styles.statLabel}>Mèmes générés</Text>
+        </View>
+      </View>
+
+      <View style={styles.menuContainer}>
+        <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="settings-outline" size={22} color={COLORS.onSurfaceVariant} />
+            <Text style={styles.menuItemText}>Mes paramètres</Text>
           </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.onSurfaceVariant} />
+        </TouchableOpacity>
 
-          {/* Nom et bio */}
-          <Text style={styles.profileName}>Le Ndoki Master</Text>
-          <Text style={styles.profileBio}>
-            Créateur de punchlines depuis 237 🇨🇲
-          </Text>
-
-          {/* Badge */}
-          <View style={styles.premiumBadge}>
-            <Text style={styles.premiumBadgeIcon}>⭐</Text>
-            <Text style={styles.premiumBadgeText}>Membre Premium</Text>
+        <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="earth-outline" size={22} color={COLORS.onSurfaceVariant} />
+            <Text style={styles.menuItemText}>Préférences de langue</Text>
           </View>
-        </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.onSurfaceVariant} />
+        </TouchableOpacity>
 
-        {/* Stats */}
-        <View style={styles.statsCard}>
-          {STATS.map((stat, index) => (
-            <React.Fragment key={stat.label}>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
-              </View>
-              {index < STATS.length - 1 && <View style={styles.statDivider} />}
-            </React.Fragment>
-          ))}
-        </View>
+        <TouchableOpacity
+          style={[styles.menuItem, styles.noBorder]}
+          onPress={handleLogout}
+        >
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="log-out-outline" size={22} color={COLORS.primary} />
+            <Text style={[styles.menuItemText, styles.logoutText]}>Déconnexion</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+        </TouchableOpacity>
+      </View>
 
-        {/* Menu */}
-        <View style={styles.menuCard}>
-          {MENU_ITEMS.map((item, index) => (
-            <TouchableOpacity
-              key={item.label}
-              style={[
-                styles.menuItem,
-                index < MENU_ITEMS.length - 1 && styles.menuItemBorder,
-              ]}
-              onPress={item.action}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuItemLeft}>
-                <Text style={styles.menuItemIcon}>{item.icon}</Text>
-                <Text
-                  style={[
-                    styles.menuItemText,
-                    item.label === 'Déconnexion' && styles.menuItemTextDanger,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </View>
-              <Text style={styles.menuArrow}>›</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Version */}
-        <Text style={styles.versionText}>AfroMeme Generator v1.0.0</Text>
-      </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  scrollContent: {
-    padding: SPACING.marginHorizontal,
-    paddingBottom: SPACING.xl,
+  contentContainer: {
+    paddingBottom: 30,
   },
-
-  // Profile Section
-  profileSection: {
+  headerContainer: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.marginHorizontal,
+    paddingBottom: SPACING.xs,
+  },
+  headerTitle: {
+    ...FONTS.headlineLgMobile,
+    color: COLORS.primary,
+  },
+  avatarContainer: {
     alignItems: 'center',
-    marginTop: SPACING.md,
-    marginBottom: SPACING.md,
+    marginTop: SPACING.marginHorizontal,
+    marginBottom: 25,
   },
-  avatarWrapper: {
-    position: 'relative',
-    marginBottom: SPACING.sm,
-  },
-  largeAvatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  initialsAvatar: {
+    width: 110,
+    height: 110,
+    borderRadius: RADII.full,
     backgroundColor: COLORS.accent,
-    alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 4,
-    borderColor: COLORS.primary + '30',
-    ...ELEVATION.level1,
-  },
-  avatarEmoji: {
-    fontSize: 48,
-  },
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.primary,
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: COLORS.background,
+    ...ELEVATION.level2,
+    marginBottom: 15,
   },
-  editAvatarIcon: {
-    fontSize: 16,
+  initialsText: {
+    ...FONTS.displayLg,
+    color: COLORS.white,
+    letterSpacing: 1,
   },
-  profileName: {
+  userName: {
     ...FONTS.headlineMd,
     color: COLORS.textMain,
     marginBottom: SPACING.base,
   },
-  profileBio: {
+  userSubtitle: {
     ...FONTS.bodyMd,
     color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
   },
-  premiumBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.accent + '20',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADII.full,
-  },
-  premiumBadgeIcon: {
-    fontSize: 14,
-    marginRight: SPACING.base,
-  },
-  premiumBadgeText: {
-    ...FONTS.labelSm,
-    color: COLORS.tertiary,
-    fontWeight: '600',
-  },
-
-  // Stats
-  statsCard: {
-    flexDirection: 'row',
+  statsContainer: {
     backgroundColor: COLORS.white,
     borderRadius: RADII.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    marginHorizontal: SPACING.md,
+    paddingVertical: SPACING.marginHorizontal,
+    alignItems: 'center',
+    justifyContent: 'center',
     ...ELEVATION.level1,
+    marginBottom: 25,
   },
   statBox: {
-    flex: 1,
     alignItems: 'center',
   },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '700',
+  statNumber: {
+    ...FONTS.headlineLg,
     color: COLORS.textMain,
-    marginBottom: SPACING.base,
   },
   statLabel: {
-    ...FONTS.labelSm,
+    ...FONTS.bodyMd,
     color: COLORS.textSecondary,
+    marginTop: SPACING.base,
   },
-  statDivider: {
-    width: 1,
-    height: '80%',
-    backgroundColor: COLORS.surfaceVariant,
-    alignSelf: 'center',
-  },
-
-  // Menu
-  menuCard: {
+  menuContainer: {
     backgroundColor: COLORS.white,
     borderRadius: RADII.lg,
-    padding: SPACING.xs,
+    marginHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     ...ELEVATION.level1,
   },
   menuItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.sm + 2,
-    paddingHorizontal: SPACING.sm,
-  },
-  menuItemBorder: {
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceContainerLow,
+    borderBottomColor: COLORS.surfaceContainerHigh,
+  },
+  noBorder: {
+    borderBottomWidth: 0,
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
-  menuItemIcon: {
-    fontSize: 20,
-    marginRight: SPACING.sm,
   },
   menuItemText: {
     ...FONTS.bodyMd,
     color: COLORS.textMain,
+    marginLeft: 14,
+    fontWeight: '500',
   },
-  menuItemTextDanger: {
-    color: COLORS.error,
-  },
-  menuArrow: {
-    fontSize: 24,
-    color: COLORS.textSecondary,
-  },
-
-  // Version
-  versionText: {
-    ...FONTS.labelSm,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: SPACING.lg,
+  logoutText: {
+    color: COLORS.primary,
+    fontWeight: 'bold',
   },
 });
-
-export default ProfileScreen;

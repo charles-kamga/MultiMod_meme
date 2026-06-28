@@ -1,8 +1,7 @@
 /**
- * ÉCRAN : LoginScreen — Connexion au Kwatt
- * Interface d'accueil avec formulaire email/mot de passe + bouton Google Sign-In.
+ * ÉCRAN : RegisterScreen — Inscription au Kwatt
+ * Formulaire d'inscription complet (nom, email, mot de passe, confirmation).
  * La navigation automatique est gérée par onAuthStateChanged dans AppNavigator.
- * Inspiré de la maquette `connexion_au_kwatt/screen.png`
  */
 
 import React, { useState } from 'react';
@@ -25,36 +24,40 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 import { AfroButton } from '../components/SharedComponents';
-import { loginWithEmail, loginWithGoogle } from '../services/authService';
+import { registerWithEmail } from '../services/authService';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
+const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleGoogleLogin = async (): Promise<void> => {
-    setGoogleLoading(true);
-    try {
-      await loginWithGoogle();
-    } catch (error: any) {
-      Alert.alert('Erreur', error.message || 'Une erreur est survenue lors de la connexion avec Google.');
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-  const handleLogin = async (): Promise<void> => {
-    if (!email.trim() || !password) {
-      Alert.alert('Oooh !', 'Remplis tous les champs.');
+  const handleRegister = async () => {
+    if (!fullName.trim()) {
+      Alert.alert('Oooh !', 'Entre ton nom complet.');
       return;
     }
+    if (!email.trim()) {
+      Alert.alert('Oooh !', 'Entre ton adresse email.');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Oooh !', 'Choisis un mot de passe.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Oooh !', 'Les mots de passe ne correspondent pas.');
+      return;
+    }
+
     setLoading(true);
-    const result = await loginWithEmail(email, password);
+    const result = await registerWithEmail(email, password, fullName.trim());
     setLoading(false);
+
     if (!result.success) {
       Alert.alert('Erreur', result.error);
     }
@@ -80,12 +83,25 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           </View>
 
-          <Text style={styles.title}>Bienvenue au Kwatt</Text>
+          <Text style={styles.title}>Creer ton compte</Text>
           <Text style={styles.subtitle}>
-            Connecte-toi pour créer tes mèmes légendaires.
+            Rejoins le Kwatt et crée tes memes legendaires.
           </Text>
 
           <View style={styles.formCard}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Nom complet</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Jean Kamga"
+                placeholderTextColor={COLORS.outline}
+                value={fullName}
+                onChangeText={setFullName}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
               <TextInput
@@ -119,44 +135,39 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={COLORS.onSurfaceVariant} />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.forgotRow}>
-                <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
-              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Confirmer le mot de passe</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="••••••••"
+                placeholderTextColor={COLORS.outline}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
             </View>
 
             {loading ? (
               <View style={styles.loadingRow}>
                 <ActivityIndicator size="large" color={COLORS.primary} />
+                <Text style={styles.loadingText}>Creation du compte...</Text>
               </View>
             ) : (
               <AfroButton
-                title="Se connecter"
-                onPress={handleLogin}
+                title="Creer mon compte"
+                onPress={handleRegister}
                 color={COLORS.primary}
               />
             )}
-
-            <TouchableOpacity
-              style={styles.googleButton}
-              onPress={handleGoogleLogin}
-              activeOpacity={0.8}
-              disabled={googleLoading}
-            >
-              {googleLoading ? (
-                <ActivityIndicator size="small" color={COLORS.textMain} />
-              ) : (
-                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-                  <Ionicons name="logo-google" size={20} color="#EA4335" style={{marginRight: 10}} />
-                  <Text style={styles.googleButtonText}>Se connecter avec Google</Text>
-                </View>
-              )}
-            </TouchableOpacity>
           </View>
 
-          <View style={styles.signupRow}>
-            <Text style={styles.signupLabel}>Pas encore de compte ? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.signupLink}>S'inscrire</Text>
+          <View style={styles.loginRow}>
+            <Text style={styles.loginLabel}>Deja un compte ? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.loginLink}>Se connecter</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -179,8 +190,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xl,
   },
-
-  // Logo
   logoContainer: {
     alignItems: 'center',
     marginBottom: SPACING.md,
@@ -191,7 +200,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Titres
   title: {
     ...FONTS.headlineLg,
     color: COLORS.textMain,
@@ -204,16 +212,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
-
-  // Carte formulaire
   formCard: {
     backgroundColor: COLORS.surfaceContainerLow,
     borderRadius: RADII.xl,
     padding: SPACING.md,
     ...ELEVATION.level1,
   },
-
-  // Input
   inputGroup: {
     marginBottom: SPACING.sm,
   },
@@ -246,50 +250,29 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
   },
-  forgotRow: {
-    alignItems: 'flex-end',
-    marginTop: SPACING.xs,
-  },
-  forgotText: {
-    ...FONTS.labelSm,
-    color: COLORS.primary,
-  },
-
   loadingRow: {
     alignItems: 'center',
     padding: SPACING.md,
   },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 52,
-    borderRadius: RADII.md,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceContainerHighest,
-    backgroundColor: COLORS.white,
-    marginTop: SPACING.sm,
-  },
-  googleButtonText: {
+  loadingText: {
     ...FONTS.labelLg,
-    color: COLORS.textMain,
+    color: COLORS.primary,
+    marginTop: SPACING.xs,
   },
-
-  // Inscription
-  signupRow: {
+  loginRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: SPACING.lg,
   },
-  signupLabel: {
+  loginLabel: {
     ...FONTS.bodyMd,
     color: COLORS.textSecondary,
   },
-  signupLink: {
+  loginLink: {
     ...FONTS.labelLg,
     color: COLORS.primary,
   },
 });
 
-export default LoginScreen;
+export default RegisterScreen;
