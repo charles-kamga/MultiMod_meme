@@ -211,16 +211,6 @@ MultimodalMemeApp/
 
 ---
 
-## Équipe
-
-**ICT202 — Groupe 8, G2** — Projet universitaire de génération de mèmes multimodale.
-
-- Frontend React Native : [Membres de l'équipe]
-- Backend Express.js / API Gateway : [Membres de l'équipe]
-- Design Afro-UX : [Membres de l'équipe]
-
----
-
 ## Sécurité
 
 - Les clés d'API ne sont **jamais** commitées dans le dépôt (présentes uniquement dans `.env`, ignoré par `.gitignore`).
