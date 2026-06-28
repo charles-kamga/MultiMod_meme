@@ -41,13 +41,18 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
   const audioRecorderPlayer = AudioRecorderPlayer;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const spinAnim = useRef(new Animated.Value(0)).current;
+  const recordingPathRef = useRef<string>('');
+  const isStoppingRef = useRef<boolean>(false);
+  const didStopRecorderRef = useRef<boolean>(false);
 
   // Nettoyer l'enregistreur et le lecteur audio lors du démontage
   useEffect(() => {
     return () => {
-      audioRecorderPlayer.stopRecorder();
+      if (!didStopRecorderRef.current) {
+        audioRecorderPlayer.stopRecorder().catch(() => {});
+      }
       audioRecorderPlayer.removeRecordBackListener();
-      audioRecorderPlayer.stopPlayer();
+      audioRecorderPlayer.stopPlayer().catch(() => {});
       audioRecorderPlayer.removePlayBackListener();
     };
   }, [audioRecorderPlayer]);
@@ -113,8 +118,8 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
       setRecordingState('recording');
       setSeconds(0);
 
-      // Démarrer l'enregistrement. Le chemin est indéfini par défaut pour laisser la bibliothèque choisir le chemin interne par défaut.
       const uri = await audioRecorderPlayer.startRecorder();
+      recordingPathRef.current = uri;
       console.log('Enregistrement démarré à :', uri);
 
       audioRecorderPlayer.addRecordBackListener((e: RecordBackType) => {
@@ -127,19 +132,81 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [audioRecorderPlayer]);
 
-  const stopRecording = useCallback(async (): Promise<void> => {
-    try {
-      const uri = await audioRecorderPlayer.stopRecorder();
-      audioRecorderPlayer.removeRecordBackListener();
-      console.log('Enregistrement arrêté. Fichier enregistré à :', uri);
+  const processAudioSubmission = useCallback(async (fileUri: string): Promise<void> => {
+    setIsSubmitting(true);
+    if (isPlaying) {
+      try { await stopPlay(); } catch (_) {}
+    }
 
+    try {
+      console.log("=== SENDING AUDIO TO VERCEL ===");
+      console.log("Audio URI:", fileUri);
+
+      const result = await generateFromVoice(fileUri);
+
+      console.log("=== VERCEL RESPONSE RECEIVED ===", result);
+
+      if (result.success && result.data) {
+        const transcription = result.data.transcription
+          || result.data.text
+          || result.data.punchline
+          || '';
+
+        const apiData = result.data?.data || result.data;
+        navigation.navigate('MemeResult', {
+          sourceType: 'voice',
+          transcription,
+          audioPath: fileUri,
+          punchline: apiData?.punchline || transcription,
+          imageUrl: apiData?.generatedImage || '',
+        });
+      } else {
+        console.error("=== VERCEL ERROR ===", result.error);
+        Alert.alert('Erreur', result.error || 'Impossible de traiter l\'audio.');
+      }
+    } catch (error: any) {
+      console.error("=== VERCEL REQUEST FAILED ===", error);
+      Alert.alert('Erreur', error?.message || 'Une erreur réseau est survenue.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [navigation, isPlaying, stopPlay]);
+
+  const stopRecording = useCallback(async (): Promise<void> => {
+    if (isStoppingRef.current) return;
+    isStoppingRef.current = true;
+
+    try {
+      audioRecorderPlayer.removeRecordBackListener();
+
+      let uri = '';
+      try {
+        uri = await audioRecorderPlayer.stopRecorder();
+      } catch (stopErr) {
+        console.warn('stopRecorder() native exception — fallback au path de démarrage', stopErr);
+        uri = recordingPathRef.current;
+      }
+
+      if (!uri) {
+        Alert.alert('Erreur', 'Aucun fichier audio trouvé.');
+        setRecordingState('ready');
+        return;
+      }
+
+      console.log('Enregistrement arrêté. Fichier :', uri);
+      didStopRecorderRef.current = true;
       setCapturedFilePath(uri);
       setRecordingState('captured');
+
+      await processAudioSubmission(uri);
     } catch (err) {
-      console.error('Impossible d\'arrêter l\'enregistrement', err);
-      Alert.alert('Erreur', 'Impossible d\'arrêter l\'enregistrement.');
+      console.error('Erreur lors de l\'arrêt:', err);
+      Alert.alert('Erreur', 'Impossible de finaliser l\'enregistrement.');
+      setRecordingState('ready');
+    } finally {
+      isStoppingRef.current = false;
     }
-  }, [audioRecorderPlayer]);
+  }, [processAudioSubmission]);
 
   const startPlay = useCallback(async (): Promise<void> => {
     if (!capturedFilePath) {
@@ -184,6 +251,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
     setRecordingState('ready');
     setSeconds(0);
     setCapturedFilePath('');
+    recordingPathRef.current = '';
   }, [audioRecorderPlayer]);
 
   const handleMicPress = (): void => {
@@ -195,26 +263,8 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleSubmitAudio = async (): Promise<void> => {
-    if (!capturedFilePath) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    if (isPlaying) {
-      await stopPlay();
-    }
-
-    const result = await generateFromVoice(capturedFilePath);
-    setIsSubmitting(false);
-
-    if (result.success && result.data) {
-      navigation.navigate('MemeResult', {
-        sourceType: 'voice',
-        resultData: result.data,
-      });
-    } else {
-      Alert.alert('Erreur', result.error || 'Impossible de traiter l\'audio.');
-    }
+    if (!capturedFilePath) return;
+    await processAudioSubmission(capturedFilePath);
   };
 
   const micButtonColor =

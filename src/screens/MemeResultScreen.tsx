@@ -79,7 +79,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
       mappedSource = 'audio';
     }
 
-    const imageUri = data.memeUrl || data.imageUri || data.imageUrl || '';
+    const imageUri = data.memeUrl || data.imageUri || data.imageUrl || data.generatedImage || '';
     const topText = data.punchlineTop || data.topText || '';
     const bottomText = data.punchlineBottom || data.bottomText || data.punchline || '';
     const punchline = data.punchline || data.punchlineBottom || data.punchlineTop || '';

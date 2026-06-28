@@ -82,19 +82,26 @@ export async function generateFromVoice(
 export const sendImageRemix = async (uri: string, fileName: string, type: string, textPrompt: string) => {
   try {
     const formData = new FormData();
-
     formData.append('textInput', textPrompt || "Remix ce statut");
-
-    formData.append('imagesInputs', {
+    formData.append('imageInputs', {
       uri: uri,
       name: fileName || 'upload.jpg',
       type: type || 'image/jpeg',
     } as any);
 
-    const response = await api.post('/context/text', formData);
-    return response.data;
-  } catch (error) {
-    console.error("Erreur lors de l'envoi du Remix Image :", error);
+    const response = await fetch('https://meme-project-kappa.vercel.app/api/context/text', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Erreur API Vercel (${response.status}): ${text}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.log("=== REMIX ERROR ===", error?.message || error);
     throw error;
   }
 };
