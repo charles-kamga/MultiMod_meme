@@ -1,6 +1,6 @@
 # Projet AFROMEME — Générateur de Memes Multimodal
 
-**AFROMEME** est une application mobile de génération de mèmes par intelligence artificielle, développée dans le cadre du cours **ICT202 — Programmation Mobile** (Groupe 8, G2).
+**AFROMEME** est une application mobile de génération de mèmes par intelligence artificielle, développée dans le cadre du cours **ICT202 — Programmation Mobile** (Groupe 8, G1).
 
 L'application permet de créer des mèmes humoristiques à partir de **trois modes de saisie** : texte (Context Reader), voix (Voice-to-Meme) et image (Status Remixer). Le tout est habillé d'une interface utilisateur "Afro-UX" aux couleurs chaleureuses inspirées des cultures d'Afrique de l'Ouest.
 
@@ -85,18 +85,20 @@ Pour le développement mobile, configure les variables d'environnement Android (
 ### 1. Cloner le dépôt
 
 ```bash
-git clone <url-du-depot>
-cd MultimodalMemeApp
+git clone (https://github.com/charles-kamga/MultiMod_meme/)
+cd MultiMod_meme
 ```
 
 ### 2. Backend — API Gateway
 
-Le backend se trouve dans le dossier `meme_clean/meme_project/`.
+Le backend est hébergé sur Vercel avec les liens : 
 
-```bash
-cd meme_clean/meme_project
-npm install
-```
+- https://meme-project-kappa.vercel.app/api/context/text (Pour le texte)
+- https://meme-project-kappa.vercel.app/api/context/audio (Pour les images)
+
+**Vous pouvez aussi cloner le repo :** https://github.com/davex932/meme_project/
+
+Suivre la procédure d'installation mentionnée dans le README.md et le lancer en local
 
 Crée le fichier `.env` à la racine du dossier backend (voir section Configuration).
 
@@ -210,6 +212,10 @@ MultimodalMemeApp/
 ```
 
 ---
+
+## Remarque à l'égard des utilisateurs et de l'enseignant : 
+
+Un système intelligent de fallback sur le serveur a été implémenté pour les IA de génération.
 
 ## Sécurité
 
