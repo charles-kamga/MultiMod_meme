@@ -1,9 +1,3 @@
-/**
- * ÉCRAN : VoiceScreen — La Voix du Kwatt
- * Gros bouton central micro avec gestion des états (Prêt, En cours, Capturé).
- * Inspiré de la maquette `la_voix_du_kwatt_1/screen.png` et `code.html`
- */
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
@@ -18,51 +12,45 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { Header, AfroButton } from '../components/SharedComponents';
+import { Header, AfroButton, InfoPanel, StatusPill } from '../components/SharedComponents';
 import { requestMicrophonePermission, showPermissionDeniedAlert } from '../utils/permissions';
 import { generateFromVoice } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Voice'>;
-
 type RecordingState = 'ready' | 'recording' | 'captured';
 
 const VoiceScreen: React.FC<Props> = ({ navigation }) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('ready');
-  const [seconds, setSeconds] = useState<number>(0);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [capturedFilePath, setCapturedFilePath] = useState<string>('');
-
+  const [seconds, setSeconds] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [capturedFilePath, setCapturedFilePath] = useState('');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Animation de pulsation pendant l'enregistrement
   useEffect(() => {
-    if (recordingState === 'recording') {
-      const pulse = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.15,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 0.9,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ]),
-      );
-      pulse.start();
-      return () => pulse.stop();
-    } else {
+    if (recordingState !== 'recording') {
       pulseAnim.setValue(1);
+      return;
     }
+
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.12, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.94, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    pulse.start();
+    return () => pulse.stop();
   }, [recordingState, pulseAnim]);
 
+  useEffect(() => () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  }, []);
+
   const formatTime = (totalSeconds: number): string => {
-    const mins = Math.floor(totalSeconds / 60)
-      .toString()
-      .padStart(2, '0');
+    const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
     const secs = (totalSeconds % 60).toString().padStart(2, '0');
     return `${mins}:${secs}`;
   };
@@ -76,11 +64,7 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
 
     setRecordingState('recording');
     setSeconds(0);
-
-    // Simuler le timer (dans un vrai projet, on utiliserait react-native-audio-recorder-player)
-    timerRef.current = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
+    timerRef.current = setInterval(() => setSeconds(value => value + 1), 1000);
   }, []);
 
   const stopRecording = useCallback((): void => {
@@ -88,17 +72,15 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-
-    // Simuler un chemin de fichier capturé
     setCapturedFilePath('/data/user/0/com.multimodalmemeapp/cache/recording.m4a');
     setRecordingState('captured');
   }, []);
 
-  const discardRecording = useCallback((): void => {
+  const discardRecording = (): void => {
     setRecordingState('ready');
     setSeconds(0);
     setCapturedFilePath('');
-  }, []);
+  };
 
   const handleMicPress = (): void => {
     if (recordingState === 'ready') {
@@ -118,128 +100,84 @@ const VoiceScreen: React.FC<Props> = ({ navigation }) => {
     setIsSubmitting(false);
 
     if (result.success && result.data) {
-      navigation.navigate('MemeResult', {
-        memeUrl: result.data.memeUrl,
-        punchlineTop: result.data.punchlineTop,
-        punchlineBottom: result.data.punchlineBottom,
-        transcription: result.data.transcription,
-        source: 'voice',
-      });
-    } else {
-      Alert.alert('Erreur', result.error || 'Impossible de traiter l\'audio.');
+      navigation.navigate('MemeResult', { meme: result.data });
+      return;
     }
+
+    Alert.alert('Backend indisponible', result.error || "Impossible de traiter l'audio.");
   };
 
-  const micButtonColor =
-    recordingState === 'recording' ? COLORS.primary : COLORS.secondary;
-  const micIcon = recordingState === 'recording' ? '⏹️' : '🎤';
+  const micColor = recordingState === 'recording' ? COLORS.coral : COLORS.primary;
 
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="La Voix du Kwatt"
+        title="Voice-to-Meme"
+        subtitle="Audio vers transcription et sous-titre"
         onBack={() => navigation.goBack()}
-        showAvatar
       />
 
       <View style={styles.mainContent}>
-        {/* Zone centrale micro */}
-        <View style={styles.micZone}>
-          {/* Anneaux de pulsation (visibles pendant l'enregistrement) */}
-          {recordingState === 'recording' && (
-            <>
-              <Animated.View
-                style={[
-                  styles.pulseRing,
-                  styles.pulseRingOuter,
-                  { transform: [{ scale: pulseAnim }] },
-                ]}
-              />
-              <Animated.View
-                style={[
-                  styles.pulseRing,
-                  styles.pulseRingInner,
-                  {
-                    transform: [
-                      {
-                        scale: Animated.multiply(pulseAnim, 0.85),
-                      },
-                    ],
-                  },
-                ]}
-              />
-            </>
-          )}
+        <StatusPill
+          label={
+            recordingState === 'ready'
+              ? 'Pret a enregistrer'
+              : recordingState === 'recording'
+                ? 'Enregistrement'
+                : 'Audio capture'
+          }
+          tone={recordingState === 'recording' ? 'warn' : 'ok'}
+        />
 
-          {/* Bouton micro principal */}
+        <View style={styles.micZone}>
+          {recordingState === 'recording' ? (
+            <Animated.View style={[styles.pulseRing, { transform: [{ scale: pulseAnim }] }]} />
+          ) : null}
+
           <TouchableOpacity
-            style={[styles.micButton, { backgroundColor: micButtonColor }]}
+            style={[styles.micButton, { backgroundColor: micColor }]}
             onPress={handleMicPress}
             activeOpacity={0.85}
+            disabled={recordingState === 'captured'}
           >
-            <Text style={styles.micIcon}>{micIcon}</Text>
+            <Text style={styles.micIcon}>{recordingState === 'recording' ? 'STOP' : 'MIC'}</Text>
           </TouchableOpacity>
-
-          {/* Timer */}
           <Text style={styles.timerDisplay}>{formatTime(seconds)}</Text>
         </View>
 
-        {/* Zone "capturé" — Lecteur audio + Poubelle */}
-        {recordingState === 'captured' && (
+        {recordingState === 'captured' ? (
           <View style={styles.capturedZone}>
             <View style={styles.audioPlayer}>
-              <TouchableOpacity style={styles.playButton}>
-                <Text style={styles.playIcon}>▶️</Text>
-              </TouchableOpacity>
-              <View style={styles.progressBar}>
-                <View style={styles.progressFill} />
-              </View>
-              <TouchableOpacity
-                style={styles.trashButton}
-                onPress={discardRecording}
-              >
-                <Text style={styles.trashIcon}>🗑️</Text>
+              <Text style={styles.audioTitle}>Recording.m4a</Text>
+              <TouchableOpacity onPress={discardRecording} style={styles.deleteButton} activeOpacity={0.75}>
+                <Text style={styles.deleteText}>Reprendre</Text>
               </TouchableOpacity>
             </View>
-
-            <View style={styles.transcriptionStatus}>
-              <ActivityIndicator size="small" color={COLORS.onSurfaceVariant} />
-              <Text style={styles.transcriptionText}>
-                Transcription IA en attente...
-              </Text>
-            </View>
+            <InfoPanel
+              title="Endpoint attendu"
+              body="POST /generate/voice avec FormData audio. Le backend transcrit, demande la punchline a Gemini et renvoie le meme."
+              tone="gold"
+            />
           </View>
-        )}
-
-        {/* Texte d'aide contextuel */}
-        {recordingState !== 'captured' && (
-          <View style={styles.hintSection}>
-            <Text style={styles.hintText}>
-              {recordingState === 'ready'
-                ? "Appuie pour commencer le ndem audio. L'IA s'occupe de transformer ta voix en meme viral."
-                : "Enregistrement en cours... Appuie à nouveau pour arrêter."}
-            </Text>
-          </View>
+        ) : (
+          <Text style={styles.hintText}>
+            Appuie sur MIC pour simuler la capture. L'integration native du recorder peut ensuite remplacer ce chemin de fichier.
+          </Text>
         )}
       </View>
 
-      {/* Footer actions (visible si capturé) */}
-      {recordingState === 'captured' && (
+      {recordingState === 'captured' ? (
         <View style={styles.footer}>
           {isSubmitting ? (
             <View style={styles.submittingRow}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.submittingText}>Envoi en cours...</Text>
+              <Text style={styles.submittingText}>Envoi audio au backend...</Text>
             </View>
           ) : (
-            <AfroButton
-              title="Envoyer l'Audio à l'IA ✨"
-              onPress={handleSubmitAudio}
-              color={COLORS.primary}
-            />
+            <AfroButton title="Envoyer l'audio a l'IA" onPress={handleSubmitAudio} />
           )}
         </View>
-      )}
+      ) : null}
     </SafeAreaView>
   );
 };
@@ -255,123 +193,74 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: SPACING.marginHorizontal,
   },
-
-  // Mic Zone
   micZone: {
-    alignItems: 'center',
-    justifyContent: 'center',
     width: 280,
     height: 280,
-    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: SPACING.md,
   },
   pulseRing: {
     position: 'absolute',
-    borderWidth: 3,
-    borderColor: COLORS.secondary,
-    borderRadius: 999,
-  },
-  pulseRingOuter: {
-    width: 250,
-    height: 250,
-    opacity: 0.15,
-  },
-  pulseRingInner: {
-    width: 220,
-    height: 220,
-    opacity: 0.25,
+    width: 245,
+    height: 245,
+    borderRadius: 123,
+    borderWidth: 4,
+    borderColor: COLORS.coral,
+    opacity: 0.22,
   },
   micButton: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    width: 176,
+    height: 176,
+    borderRadius: 88,
     alignItems: 'center',
     justifyContent: 'center',
     ...ELEVATION.level2,
   },
   micIcon: {
-    fontSize: 56,
+    ...FONTS.headlineMd,
+    color: COLORS.white,
   },
   timerDisplay: {
-    ...FONTS.labelLg,
-    color: COLORS.onSurfaceVariant,
+    ...FONTS.title,
+    color: COLORS.textMain,
     marginTop: SPACING.lg,
-    letterSpacing: 3,
-    fontSize: 18,
-  },
-
-  // Captured Zone
-  capturedZone: {
-    width: '100%',
-    marginTop: SPACING.lg,
-  },
-  audioPlayer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surfaceContainerHighest,
-    borderRadius: RADII.lg,
-    padding: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.outlineVariant,
-    ...ELEVATION.level1,
-  },
-  playButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...ELEVATION.level1,
-  },
-  playIcon: {
-    fontSize: 20,
-  },
-  progressBar: {
-    flex: 1,
-    height: 4,
-    backgroundColor: COLORS.outlineVariant,
-    borderRadius: 2,
-    marginHorizontal: SPACING.sm,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    width: '33%',
-    height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
-  },
-  trashButton: {
-    padding: SPACING.xs,
-  },
-  trashIcon: {
-    fontSize: 22,
-  },
-  transcriptionStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: SPACING.sm,
-  },
-  transcriptionText: {
-    ...FONTS.labelLg,
-    color: COLORS.onSurfaceVariant,
-    fontStyle: 'italic',
-    marginLeft: SPACING.xs,
-  },
-
-  // Hint
-  hintSection: {
-    marginTop: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
   },
   hintText: {
     ...FONTS.bodyMd,
-    color: COLORS.onSurfaceVariant,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+    maxWidth: 310,
   },
-
-  // Footer
+  capturedZone: {
+    width: '100%',
+    gap: SPACING.sm,
+  },
+  audioPlayer: {
+    width: '100%',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: SPACING.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  audioTitle: {
+    ...FONTS.labelLg,
+    color: COLORS.textMain,
+  },
+  deleteButton: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 8,
+    borderRadius: RADII.full,
+    backgroundColor: COLORS.surfaceSoft,
+  },
+  deleteText: {
+    ...FONTS.labelSm,
+    color: COLORS.primaryDark,
+  },
   footer: {
     paddingHorizontal: SPACING.marginHorizontal,
     paddingBottom: SPACING.lg,

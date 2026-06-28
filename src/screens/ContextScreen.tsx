@@ -1,9 +1,3 @@
-/**
- * ÉCRAN : ContextScreen — Analyseur de Ndoki (Texte)
- * Grand champ texte + sélecteur d'ambiance (Clash, Ndolo, Nyanga, Sarcasme) + bouton d'action.
- * Inspiré de la maquette `analyseur_de_ndoki/screen.png`
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -17,60 +11,51 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { Header, AfroButton, MoodChip } from '../components/SharedComponents';
+import { COLORS, SPACING, RADII, FONTS } from '../theme/colors';
+import { Header, AfroButton, MoodChip, InfoPanel } from '../components/SharedComponents';
 import { generateFromContext } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Context'>;
-
 type Mood = 'clash' | 'ndolo' | 'nyanga' | 'sarcasme';
 
-interface MoodOption {
-  key: Mood;
-  label: string;
-  icon: string;
-}
-
-const MOOD_OPTIONS: MoodOption[] = [
-  { key: 'clash', label: 'Clash / Mbindi', icon: '⚡' },
-  { key: 'ndolo', label: 'Ndolo / Amour', icon: '❤️' },
-  { key: 'nyanga', label: 'Nyanga / Fierté', icon: '💎' },
-  { key: 'sarcasme', label: 'Sarcasme Total', icon: '🎭' },
+const MOODS: Array<{ key: Mood; label: string; icon: string; color: string }> = [
+  { key: 'clash', label: 'Clash', icon: 'CL', color: COLORS.coral },
+  { key: 'ndolo', label: 'Ndolo', icon: 'ND', color: COLORS.primary },
+  { key: 'nyanga', label: 'Nyanga', icon: 'NY', color: COLORS.accent },
+  { key: 'sarcasme', label: 'Sarcasme', icon: 'SA', color: COLORS.secondary },
 ];
 
 const MAX_CHARS = 2000;
 
 const ContextScreen: React.FC<Props> = ({ navigation }) => {
-  const [text, setText] = useState<string>('');
+  const [text, setText] = useState('');
   const [selectedMood, setSelectedMood] = useState<Mood>('clash');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerate = async (): Promise<void> => {
-    if (!text.trim()) {
-      Alert.alert('Oooh !', 'Colle ou écris une discussion avant de lancer le ndem.');
+    const cleanText = text.trim();
+    if (cleanText.length < 10) {
+      Alert.alert('Texte trop court', 'Ajoute assez de contexte pour que le backend puisse analyser la situation.');
       return;
     }
 
     setIsLoading(true);
-    const result = await generateFromContext(text, selectedMood);
+    const result = await generateFromContext(cleanText, selectedMood, 'cm');
     setIsLoading(false);
 
     if (result.success && result.data) {
-      navigation.navigate('MemeResult', {
-        memeUrl: result.data.memeUrl,
-        punchlineTop: result.data.punchlineTop,
-        punchlineBottom: result.data.punchlineBottom,
-        source: 'context',
-      });
-    } else {
-      Alert.alert('Erreur', result.error || 'Impossible de générer le mème.');
+      navigation.navigate('MemeResult', { meme: result.data });
+      return;
     }
+
+    Alert.alert('Backend indisponible', result.error || 'Impossible de generer le meme.');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Analyseur de Ndoki (Texte)"
+        title="Context Reader"
+        subtitle="Texte vers punchline multimodale"
         onBack={() => navigation.goBack()}
       />
 
@@ -80,77 +65,53 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Zone de texte */}
         <View style={styles.textAreaContainer}>
           <TextInput
             style={styles.textArea}
-            placeholder="Colle ou écris l'échange ici... (Ex: Ce que ma copine m'a dit ce matin...)"
-            placeholderTextColor={COLORS.outline}
+            placeholder="Colle ici une conversation, une situation ou un statut a transformer en meme..."
+            placeholderTextColor={COLORS.textSecondary}
             multiline
             textAlignVertical="top"
             maxLength={MAX_CHARS}
             value={text}
             onChangeText={setText}
           />
-          <View style={styles.charCountRow}>
-            <Text style={styles.charCount}>
-              {text.length} / {MAX_CHARS}
-            </Text>
-          </View>
+          <Text style={styles.charCount}>{text.length} / {MAX_CHARS}</Text>
         </View>
 
-        {/* Sélecteur de Mood */}
-        <View style={styles.moodSection}>
-          <Text style={styles.moodSectionLabel}>
-            ◉ CHOISIR LE NDOKI (MOOD)
-          </Text>
-          <View style={styles.moodGrid}>
-            {MOOD_OPTIONS.map((mood) => (
-              <View key={mood.key} style={styles.moodChipWrapper}>
-                <MoodChip
-                  label={mood.label}
-                  icon={mood.icon}
-                  isSelected={selectedMood === mood.key}
-                  onPress={() => setSelectedMood(mood.key)}
-                  color={
-                    mood.key === 'clash'
-                      ? COLORS.primary
-                      : mood.key === 'ndolo'
-                        ? COLORS.secondary
-                        : mood.key === 'nyanga'
-                          ? COLORS.tertiary
-                          : COLORS.textMain
-                  }
-                />
-              </View>
-            ))}
-          </View>
+        <Text style={styles.sectionLabel}>Ambiance culturelle</Text>
+        <View style={styles.moodGrid}>
+          {MOODS.map(mood => (
+            <View key={mood.key} style={styles.moodWrapper}>
+              <MoodChip
+                label={mood.label}
+                icon={mood.icon}
+                color={mood.color}
+                isSelected={selectedMood === mood.key}
+                onPress={() => setSelectedMood(mood.key)}
+              />
+            </View>
+          ))}
         </View>
 
-        {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
-          <View style={styles.infoTextBlock}>
-            <Text style={styles.infoText}>
-              L'IA va scanner le sous-entendu, le sarcasme et la dose de "piment"
-              dans ton texte pour sortir le mème parfait.
-            </Text>
-          </View>
+        <View style={styles.panelSpace}>
+          <InfoPanel
+            title="Pipeline securise"
+            body="Le texte part vers POST /generate/context. Express ajoute le prompt culturel, appelle Gemini, puis renvoie la punchline."
+          />
         </View>
 
-        {/* Bouton d'action */}
         <View style={styles.actionSection}>
           {isLoading ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Le ndem opère...</Text>
+              <Text style={styles.loadingText}>Analyse du contexte en cours...</Text>
             </View>
           ) : (
             <AfroButton
-              title="Laisser Gemini Analyser ✨"
+              title="Generer le meme texte"
               onPress={handleGenerate}
-              color={COLORS.primary}
-              disabled={!text.trim()}
+              disabled={text.trim().length < 10}
             />
           )}
         </View>
@@ -171,77 +132,45 @@ const styles = StyleSheet.create({
     padding: SPACING.marginHorizontal,
     paddingBottom: SPACING.xl,
   },
-
-  // Text Area
   textAreaContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.xl,
     borderWidth: 1.5,
-    borderColor: COLORS.outlineVariant,
-    borderStyle: 'dashed',
-    marginTop: SPACING.sm,
+    borderColor: COLORS.borderStrong,
     overflow: 'hidden',
   },
   textArea: {
-    minHeight: 200,
-    padding: SPACING.sm,
-    fontSize: 16,
+    minHeight: 220,
+    padding: SPACING.md,
     color: COLORS.textMain,
+    fontSize: 16,
     lineHeight: 24,
-  },
-  charCountRow: {
-    alignItems: 'flex-end',
-    paddingHorizontal: SPACING.sm,
-    paddingBottom: SPACING.xs,
   },
   charCount: {
     ...FONTS.labelSm,
     color: COLORS.textSecondary,
+    textAlign: 'right',
+    paddingRight: SPACING.md,
+    paddingBottom: SPACING.sm,
   },
-
-  // Mood Section
-  moodSection: {
-    marginTop: SPACING.md,
-  },
-  moodSectionLabel: {
+  sectionLabel: {
     ...FONTS.labelLg,
-    color: COLORS.onSurfaceVariant,
+    color: COLORS.textMain,
+    marginTop: SPACING.md,
     marginBottom: SPACING.sm,
-    letterSpacing: 1,
   },
   moodGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: SPACING.xs,
+    marginHorizontal: -4,
   },
-  moodChipWrapper: {
-    width: '48%',
+  moodWrapper: {
+    width: '50%',
+    padding: 4,
   },
-
-  // Info Card
-  infoCard: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.secondaryContainer,
-    borderRadius: RADII.lg,
-    padding: SPACING.sm,
+  panelSpace: {
     marginTop: SPACING.md,
-    alignItems: 'flex-start',
   },
-  infoIcon: {
-    fontSize: 20,
-    marginRight: SPACING.xs,
-    marginTop: 2,
-  },
-  infoTextBlock: {
-    flex: 1,
-  },
-  infoText: {
-    ...FONTS.bodyMd,
-    color: COLORS.onSecondaryContainer,
-    lineHeight: 22,
-  },
-
-  // Action
   actionSection: {
     marginTop: SPACING.lg,
   },

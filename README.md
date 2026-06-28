@@ -1,89 +1,86 @@
-# 📱 Multimodal Meme App - Frontend Mobile (React Native CLI)
+# MultiMod Meme - ICT202
 
-Bienvenue sur le dépôt du client mobile de notre **Générateur de Memes Multimodal**[cite: 1]. Cette application est développée en **React Native CLI (TypeScript)** et est optimisée pour **Android**[cite: 1].
+Application mobile React Native CLI pour generer des memes intelligents et multimodaux a partir de texte, voix ou image.
 
-Elle intègre une interface utilisateur moderne inspirée de la culture et du design africain (Afro-UX Chaleureux) et communique exclusivement avec notre API Gateway Express.js pour transformer les textes, audios et images en mèmes cultes du kwatt.
+## Objectif
 
----
+Le projet cree un generateur de memes capable de lire le contexte d'une situation, de l'envoyer a une API Gateway Express.js, puis de recuperer une punchline ou un visuel pret a partager.
 
-## 🎨 Charte Graphique (Afro-UX Modern)
+Regle de securite: le mobile ne doit jamais appeler Google Gemini directement. Tous les appels IA passent par le backend Express afin de proteger les cles API.
 
-Pour assurer la cohérence visuelle pendant le développement des écrans, respectez la palette de couleurs mutes et chaleureuses :
-* **Background Global** : `#FAF6F0` (Ivoire / Crème doux)
-* **Couleur Primaire** : `#C84B31` (Terracotta / Terre Cuite)
-* **Couleur Secondaire** : `#1B4232` (Vert Forêt Tropicale)
-* **Accents** : `#F4A261` (Ocre Jaune / Or Chaud)
-* **Textes / Titres** : `#1A1A1A` (Charbon Profond)
+## Stack
 
----
+- Frontend: React Native CLI, TypeScript, React Navigation.
+- Backend attendu: Node.js, Express.js.
+- IA: Google Gemini 1.5 Flash via le backend.
+- Upload fichiers: Multer cote backend pour audio et image.
+- Stockage local mobile: AsyncStorage pour la galerie.
 
-## 📁 Structure du Code Source (`/src`)
+## Modules
 
-Le projet est modularisé pour permettre à plusieurs développeurs de travailler simultanément sans créer de conflits Git :
+- Context Reader: envoie un texte vers `POST /api/generate/context`.
+- Voice-to-Meme: envoie un fichier audio vers `POST /api/generate/voice`.
+- Status Remixer: envoie une image vers `POST /api/generate/remix`.
+- Galerie: sauvegarde locale des resultats generes.
+- Partage: partage general et WhatsApp via `react-native-share`.
 
-```text
-src/
-├── components/       # Composants d'UI réutilisables (Boutons, Cartes, Loaders)
-├── screens/          # Écrans principaux de l'application (Architecture Core)
-│   ├── HomeScreen.tsx         # Dashboard d'accueil et choix du canal
-│   ├── ContextScreen.tsx      # Module Texte (Context Reader)
-│   ├── VoiceScreen.tsx        # Module Audio (Voice-to-Meme)
-│   ├── RemixerScreen.tsx      # Module Image (Status Remixer)
-│   └── MemeResultScreen.tsx   # Écran de rendu du mème finalisé et partage
-├── navigation/       # Configuration des flux de navigation (React Navigation Stack)
-├── services/         # Client API (Configuration d'Axios pour les requêtes vers le serveur)
-├── hooks/            # Hooks personnalisés (Gestion des permissions, Enregistreur Audio)
-└── utils/            # Fonctions d'aide (Formatage, constantes de style)
+## Theme
+
+La refonte visuelle utilise un theme vert:
+
+- Primaire: `#0F7B3A`
+- Secondaire: `#16463A`
+- Fond: `#F3F8EF`
+- Accent: `#E3A72F`
+
+## Backend
+
+L'URL mobile par defaut est:
+
+```ts
+http://10.0.2.2:5000/api
 ```
 
----
+Sur emulateur Android, `10.0.2.2` pointe vers le `localhost` de la machine. Sur telephone physique, remplacez cette adresse dans `src/services/api.ts` par l'IP locale du PC qui lance Express.
 
-## 🛠️ Configuration et Lancement (Émulateur ou Téléphone Physique)
+Endpoints attendus:
 
-### 🧱 Prérequis
+```txt
+GET  /api/health
+POST /api/generate/context
+POST /api/generate/voice
+POST /api/generate/remix
+```
 
-* Node.js (Version 18 ou supérieure recommandée)
-* Android Studio installé et configuré avec un émulateur Android (AVD).
-* Variables d'environnement ANDROID_HOME et outils SDK configurés dans votre système.
-
-### 1. Installation des Dépendances
-
-À la racine du dossier frontend, exécutez la commande suivante pour installer les packages requis :
+## Installation
 
 ```bash
 npm install
 ```
 
-### 2. Liaison avec le Serveur Backend Express.js
-
-Pour que l'application mobile puisse communiquer avec l'API, vous devez configurer l'adresse IP cible.
-
-Ouvrez le fichier de configuration de vos services d'API (généralement situé dans `src/services/api.ts`).
-
-Configurez l'URL de base pour pointer vers le serveur de développement.
-
-⚠️ **Note Critique pour l'Émulateur Android** : N'utilisez pas `localhost` ou `127.0.0.1` car l'émulateur Android possède sa propre boucle locale virtuelle. Utilisez l'adresse IP de redirection d'Android Studio :
-
-```typescript
-export const BASE_URL = "http://10.0.2.2:5000/api";
-```
-
-> Si vous testez sur un **téléphone physique**, remplacez `10.0.2.2` par l'adresse IP locale de la machine qui héberge le serveur Express (ex: `http://192.168.1.50:5000/api`), et assurez-vous que le téléphone et le PC partagent le même réseau Wi-Fi.
-
-### 3. Exécution de l'Application
-
-1. Démarrez votre émulateur Android ou connectez votre smartphone physique en mode débogage USB.
-2. Lancez le serveur de bundle (Metro Bundler) et déployez l'application sur votre appareil :
+## Lancement en developpement
 
 ```bash
-npx react-native run-android
+npm start
+npm run android
 ```
 
----
+## Generation APK
 
-## 🔒 Gestion des Permissions Android
+```bash
+cd android
+./gradlew assembleRelease
+```
 
-L'application exploite deux capteurs matériels stratégiques. Le code intègre des vérifications asynchrones via `PermissionsAndroid` pour :
+APK attendu:
 
-* **Le Microphone (RECORD_AUDIO)** : Requis pour capturer les notes vocales du module Voice-to-Meme[cite: 1, 2].
-* **Le Stockage / La Galerie (READ_EXTERNAL_STORAGE / READ_MEDIA_IMAGES)** : Requis pour sélectionner les images du module Status Remixer[cite: 1, 2].
+```txt
+android/app/build/outputs/apk/release/app-release.apk
+```
+
+## Verification
+
+```bash
+npx tsc --noEmit
+npm run lint
+```

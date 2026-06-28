@@ -1,8 +1,3 @@
-/**
- * COMPOSANTS PARTAGÉS — AfroButton, Header, AfroCard, MoodChip
- * Design system Afro-UX : formes organiques, ombres ambiantes, couleurs terracotta.
- */
-
 import React from 'react';
 import {
   View,
@@ -14,21 +9,16 @@ import {
 } from 'react-native';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 
-/* ─────────────────────────────────────────────────
- * AFRO BUTTON
- * ───────────────────────────────────────────────── */
-
-interface AfroButtonProps {
+interface ButtonProps {
   title: string;
   onPress: () => void;
   color?: string;
   variant?: 'solid' | 'outline' | 'ghost';
-  icon?: string;
   disabled?: boolean;
   style?: ViewStyle;
 }
 
-export const AfroButton: React.FC<AfroButtonProps> = ({
+export const AfroButton: React.FC<ButtonProps> = ({
   title,
   onPress,
   color = COLORS.primary,
@@ -36,45 +26,37 @@ export const AfroButton: React.FC<AfroButtonProps> = ({
   disabled = false,
   style,
 }) => {
-  const buttonStyle: ViewStyle[] = [
-    styles.button,
-    variant === 'solid' && { backgroundColor: color },
-    variant === 'outline' && {
-      backgroundColor: COLORS.transparent,
-      borderWidth: 2,
-      borderColor: color,
-    },
-    variant === 'ghost' && {
-      backgroundColor: COLORS.transparent,
-      elevation: 0,
-    },
-    disabled && { opacity: 0.5 },
-    style as ViewStyle,
-  ].filter(Boolean) as ViewStyle[];
-
-  const textColor = variant === 'solid' ? COLORS.white : color;
+  const solid = variant === 'solid';
+  const outline = variant === 'outline';
 
   return (
     <TouchableOpacity
-      style={buttonStyle}
-      onPress={onPress}
-      activeOpacity={0.8}
+      style={[
+        styles.button,
+        solid && { backgroundColor: color },
+        outline && [styles.outlineButton, { borderColor: color }],
+        variant === 'ghost' && styles.ghostButton,
+        disabled && styles.disabled,
+        style,
+      ]}
+      activeOpacity={0.85}
       disabled={disabled}
+      onPress={onPress}
     >
-      <Text style={[styles.buttonText, { color: textColor }]}>{title}</Text>
+      <Text style={[styles.buttonText, { color: solid ? COLORS.white : color }]}>
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 };
-
-/* ─────────────────────────────────────────────────
- * HEADER
- * ───────────────────────────────────────────────── */
 
 interface HeaderProps {
   title: string;
   subtitle?: string;
   showAvatar?: boolean;
   onBack?: () => void;
+  rightLabel?: string;
+  onRightPress?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -82,36 +64,32 @@ export const Header: React.FC<HeaderProps> = ({
   subtitle,
   showAvatar = false,
   onBack,
+  rightLabel,
+  onRightPress,
 }) => (
   <View style={styles.headerContainer}>
-    {onBack && (
-      <TouchableOpacity
-        onPress={onBack}
-        style={styles.backButton}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.backButtonText}>←</Text>
+    {onBack ? (
+      <TouchableOpacity onPress={onBack} style={styles.headerIconButton} activeOpacity={0.75}>
+        <Text style={styles.headerIconText}>{'<'}</Text>
       </TouchableOpacity>
-    )}
+    ) : null}
+
     <View style={styles.headerTextSection}>
-      <Text style={styles.headerTitle} numberOfLines={2}>
-        {title}
-      </Text>
-      {subtitle && (
-        <Text style={styles.headerSubtitle}>{subtitle}</Text>
-      )}
+      <Text style={styles.headerTitle} numberOfLines={2}>{title}</Text>
+      {subtitle ? <Text style={styles.headerSubtitle} numberOfLines={2}>{subtitle}</Text> : null}
     </View>
-    {showAvatar && (
-      <View style={styles.avatarContainer}>
-        <View style={styles.avatarPlaceholder} />
+
+    {rightLabel ? (
+      <TouchableOpacity onPress={onRightPress} style={styles.headerPill} activeOpacity={0.75}>
+        <Text style={styles.headerPillText}>{rightLabel}</Text>
+      </TouchableOpacity>
+    ) : showAvatar ? (
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>237</Text>
       </View>
-    )}
+    ) : null}
   </View>
 );
-
-/* ─────────────────────────────────────────────────
- * FEATURE CARD (Dashboard)
- * ───────────────────────────────────────────────── */
 
 interface FeatureCardProps {
   title: string;
@@ -131,65 +109,31 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
   badge,
   onPress,
   variant = 'large',
-}) => {
-  if (variant === 'compact') {
-    return (
-      <TouchableOpacity
-        style={[styles.compactCard, { borderTopWidth: 6, borderTopColor: accentColor }]}
-        onPress={onPress}
-        activeOpacity={0.85}
-      >
-        <View
-          style={[
-            styles.iconCircle,
-            { backgroundColor: accentColor + '18' },
-          ]}
-        >
-          <Text style={{ fontSize: 22 }}>{icon}</Text>
-        </View>
-        <View style={styles.compactCardContent}>
-          <Text style={styles.compactCardTitle}>{title}</Text>
-          <Text style={styles.compactCardDesc}>{description}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }
-
-  return (
-    <TouchableOpacity
-      style={[styles.largeCard, { borderLeftWidth: 8, borderLeftColor: accentColor }]}
-      onPress={onPress}
-      activeOpacity={0.85}
-    >
-      <View style={styles.largeCardTopRow}>
-        <View
-          style={[
-            styles.iconCircleLarge,
-            { backgroundColor: accentColor + '18' },
-          ]}
-        >
-          <Text style={{ fontSize: 28 }}>{icon}</Text>
-        </View>
-        {badge && (
-          <View style={[styles.badge, { backgroundColor: accentColor }]}>
-            <Text style={styles.badgeText}>{badge}</Text>
-          </View>
-        )}
+}) => (
+  <TouchableOpacity
+    style={[
+      variant === 'large' ? styles.featureLarge : styles.featureCompact,
+      { borderColor: accentColor },
+    ]}
+    activeOpacity={0.86}
+    onPress={onPress}
+  >
+    <View style={styles.featureTopRow}>
+      <View style={[styles.featureIcon, { backgroundColor: `${accentColor}22` }]}>
+        <Text style={[styles.featureIconText, { color: accentColor }]}>{icon}</Text>
       </View>
-      <Text style={styles.largeCardTitle}>{title}</Text>
-      <Text style={styles.largeCardDesc}>{description}</Text>
-      <View style={styles.largeCardArrowRow}>
-        <View style={[styles.arrowCircle, { backgroundColor: accentColor }]}>
-          <Text style={styles.arrowIcon}>→</Text>
+      {badge ? (
+        <View style={[styles.badge, { backgroundColor: `${accentColor}18` }]}>
+          <Text style={[styles.badgeText, { color: accentColor }]}>{badge}</Text>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-/* ─────────────────────────────────────────────────
- * MOOD CHIP (Context Screen)
- * ───────────────────────────────────────────────── */
+      ) : null}
+    </View>
+    <Text style={variant === 'large' ? styles.featureTitleLarge : styles.featureTitle}>
+      {title}
+    </Text>
+    <Text style={styles.featureDescription}>{description}</Text>
+  </TouchableOpacity>
+);
 
 interface MoodChipProps {
   label: string;
@@ -210,226 +154,231 @@ export const MoodChip: React.FC<MoodChipProps> = ({
     style={[
       styles.moodChip,
       isSelected
-        ? { backgroundColor: color, ...ELEVATION.level1 }
-        : { backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.outlineVariant },
+        ? { backgroundColor: color, borderColor: color }
+        : { backgroundColor: COLORS.surface, borderColor: COLORS.border },
     ]}
+    activeOpacity={0.82}
     onPress={onPress}
-    activeOpacity={0.8}
   >
-    <Text style={{ fontSize: 18, marginBottom: 4 }}>{icon}</Text>
-    <Text
-      style={[
-        styles.moodChipText,
-        { color: isSelected ? COLORS.white : COLORS.onSurfaceVariant },
-      ]}
-    >
+    <Text style={[styles.moodIcon, { color: isSelected ? COLORS.white : color }]}>{icon}</Text>
+    <Text style={[styles.moodText, { color: isSelected ? COLORS.white : COLORS.textMain }]}>
       {label}
     </Text>
   </TouchableOpacity>
 );
 
-/* ─────────────────────────────────────────────────
- * LOADING INDICATOR
- * ───────────────────────────────────────────────── */
+export const StatusPill: React.FC<{ label: string; tone?: 'ok' | 'warn' | 'dark' }> = ({
+  label,
+  tone = 'ok',
+}) => {
+  const color = tone === 'ok' ? COLORS.primary : tone === 'warn' ? COLORS.accent : COLORS.secondary;
+  return (
+    <View style={[styles.statusPill, { backgroundColor: `${color}18`, borderColor: `${color}55` }]}>
+      <View style={[styles.statusDot, { backgroundColor: color }]} />
+      <Text style={[styles.statusText, { color }]}>{label}</Text>
+    </View>
+  );
+};
 
-export const AfroLoader: React.FC<{ message?: string }> = ({
-  message = 'Chargement...',
-}) => (
-  <View style={styles.loaderContainer}>
-    <View style={styles.loaderShape} />
-    <Text style={styles.loaderText}>{message}</Text>
-  </View>
-);
-
-/* ─────────────────────────────────────────────────
- * STYLES
- * ───────────────────────────────────────────────── */
+export const InfoPanel: React.FC<{ title: string; body: string; tone?: 'green' | 'gold' }> = ({
+  title,
+  body,
+  tone = 'green',
+}) => {
+  const color = tone === 'green' ? COLORS.primary : COLORS.accent;
+  return (
+    <View style={[styles.infoPanel, { borderLeftColor: color }]}>
+      <Text style={styles.infoTitle}>{title}</Text>
+      <Text style={styles.infoBody}>{body}</Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  // Button
   button: {
-    height: 56,
-    borderRadius: RADII.lg,
+    minHeight: 54,
+    borderRadius: RADII.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: SPACING.xs,
-    width: '100%',
+    paddingHorizontal: SPACING.md,
     ...ELEVATION.level1,
   } as ViewStyle,
+  ghostButton: {
+    backgroundColor: COLORS.transparent,
+    elevation: 0,
+    shadowOpacity: 0,
+  } as ViewStyle,
+  outlineButton: {
+    borderWidth: 1.5,
+    backgroundColor: COLORS.transparent,
+  } as ViewStyle,
+  disabled: {
+    opacity: 0.45,
+  } as ViewStyle,
   buttonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    ...FONTS.labelLg,
+    fontSize: 15,
   } as TextStyle,
-
-  // Header
   headerContainer: {
     paddingHorizontal: SPACING.marginHorizontal,
-    paddingTop: SPACING.marginHorizontal,
-    paddingBottom: SPACING.xs,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   } as ViewStyle,
+  headerIconButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
+  } as ViewStyle,
+  headerIconText: {
+    ...FONTS.title,
+    color: COLORS.primaryDark,
+  } as TextStyle,
   headerTextSection: {
     flex: 1,
   } as ViewStyle,
   headerTitle: {
     ...FONTS.headlineMd,
-    color: COLORS.primary,
-    letterSpacing: -0.3,
+    color: COLORS.ink,
   } as TextStyle,
   headerSubtitle: {
-    ...FONTS.labelLg,
-    color: COLORS.onSurfaceVariant,
-    marginTop: SPACING.base,
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
+    marginTop: 3,
   } as TextStyle,
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.sm,
+  headerPill: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    backgroundColor: COLORS.primaryContainer,
+    borderRadius: RADII.full,
   } as ViewStyle,
-  backButtonText: {
-    fontSize: 22,
-    color: COLORS.textMain,
+  headerPillText: {
+    ...FONTS.labelSm,
+    color: COLORS.primaryDark,
   } as TextStyle,
-  avatarContainer: {
+  avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    overflow: 'hidden',
+    backgroundColor: COLORS.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: SPACING.sm,
   } as ViewStyle,
-  avatarPlaceholder: {
-    flex: 1,
-    backgroundColor: COLORS.accent,
-  } as ViewStyle,
-
-  // Large Feature Card
-  largeCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
-    padding: SPACING.marginHorizontal,
-    marginBottom: SPACING.sm,
+  avatarText: {
+    ...FONTS.labelSm,
+    color: COLORS.white,
+  } as TextStyle,
+  featureLarge: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.xl,
+    borderWidth: 1.5,
+    padding: SPACING.md,
+    minHeight: 190,
     ...ELEVATION.level1,
   } as ViewStyle,
-  largeCardTopRow: {
+  featureCompact: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.lg,
+    borderWidth: 1.5,
+    padding: SPACING.sm,
+    minHeight: 152,
+    ...ELEVATION.level1,
+  } as ViewStyle,
+  featureTopRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
     marginBottom: SPACING.sm,
   } as ViewStyle,
-  iconCircleLarge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   } as ViewStyle,
+  featureIconText: {
+    ...FONTS.title,
+  } as TextStyle,
   badge: {
     paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.base + 2,
+    paddingVertical: 6,
     borderRadius: RADII.full,
   } as ViewStyle,
   badgeText: {
     ...FONTS.labelSm,
-    color: COLORS.white,
-    fontWeight: '600',
   } as TextStyle,
-  largeCardTitle: {
+  featureTitleLarge: {
     ...FONTS.headlineMd,
     color: COLORS.textMain,
     marginBottom: SPACING.xs,
   } as TextStyle,
-  largeCardDesc: {
-    ...FONTS.bodyMd,
-    color: COLORS.onSurfaceVariant,
-  } as TextStyle,
-  largeCardArrowRow: {
-    alignItems: 'flex-end',
-    marginTop: SPACING.sm,
-  } as ViewStyle,
-  arrowCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  } as ViewStyle,
-  arrowIcon: {
-    fontSize: 20,
-    color: COLORS.white,
-    fontWeight: '700',
-  } as TextStyle,
-
-  // Compact Feature Card
-  compactCard: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
-    padding: SPACING.sm,
-    ...ELEVATION.level1,
-  } as ViewStyle,
-  compactCardContent: {
-    marginTop: SPACING.xs,
-  } as ViewStyle,
-  compactCardTitle: {
-    ...FONTS.labelLg,
+  featureTitle: {
+    ...FONTS.title,
     color: COLORS.textMain,
-    fontWeight: '700',
+    marginBottom: SPACING.xs,
   } as TextStyle,
-  compactCardDesc: {
-    ...FONTS.labelSm,
-    color: COLORS.onSurfaceVariant,
-    marginTop: SPACING.base,
+  featureDescription: {
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
   } as TextStyle,
-
-  // Icon Circle (shared)
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  } as ViewStyle,
-
-  // Mood Chip
   moodChip: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderRadius: RADII.md,
     paddingVertical: SPACING.sm,
-    borderRadius: RADII.lg,
-    minHeight: 80,
-  } as ViewStyle,
-  moodChipText: {
-    ...FONTS.labelSm,
-    fontWeight: '600',
-  } as TextStyle,
-
-  // Loader
-  loaderContainer: {
-    flex: 1,
+    paddingHorizontal: SPACING.xs,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.xl,
+    minHeight: 82,
   } as ViewStyle,
-  loaderShape: {
-    width: 48,
-    height: 48,
-    borderRadius: 18,
-    backgroundColor: COLORS.primary,
-    opacity: 0.6,
-    marginBottom: SPACING.sm,
+  moodIcon: {
+    ...FONTS.title,
+    marginBottom: 4,
+  } as TextStyle,
+  moodText: {
+    ...FONTS.labelSm,
+    textAlign: 'center',
+  } as TextStyle,
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: RADII.full,
+    borderWidth: 1,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 6,
   } as ViewStyle,
-  loaderText: {
-    ...FONTS.labelLg,
-    color: COLORS.onSurfaceVariant,
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 7,
+  } as ViewStyle,
+  statusText: {
+    ...FONTS.labelSm,
+  } as TextStyle,
+  infoPanel: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.lg,
+    padding: SPACING.md,
+    borderLeftWidth: 5,
+    ...ELEVATION.level1,
+  } as ViewStyle,
+  infoTitle: {
+    ...FONTS.title,
+    color: COLORS.textMain,
+    marginBottom: 5,
+  } as TextStyle,
+  infoBody: {
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
   } as TextStyle,
 });

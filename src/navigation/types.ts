@@ -1,6 +1,4 @@
-/**
- * TYPES DE NAVIGATION — Typage strict des routes et paramètres
- */
+import type { MemeResult } from '../types/meme';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -9,11 +7,7 @@ export type RootStackParamList = {
   Voice: undefined;
   Remixer: undefined;
   MemeResult: {
-    memeUrl?: string;
-    punchlineTop?: string;
-    punchlineBottom?: string;
-    transcription?: string;
-    source: 'context' | 'voice' | 'remix';
+    meme: MemeResult;
   };
   Gallery: undefined;
 };

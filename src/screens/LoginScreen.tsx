@@ -1,36 +1,29 @@
-/**
- * ÉCRAN : LoginScreen — Connexion au Kwatt
- * Interface d'accueil épurée et chaleureuse.
- * Inspiré de la maquette `connexion_au_kwatt/screen.png`
- */
-
 import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   SafeAreaView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { AfroButton } from '../components/SharedComponents';
+import { AfroButton, StatusPill } from '../components/SharedComponents';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+const loginArt = require('../assets/memes/context_ai.png');
 
-  const handleLogin = (): void => {
-    navigation.replace('MainTabs');
-  };
+const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  const [email, setEmail] = useState('demo@ict202.cm');
+  const [password, setPassword] = useState('ict202');
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,59 +36,34 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Logo */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoEmoji}>✨</Text>
+          <View style={styles.hero}>
+            <View style={styles.brandMark}>
+              <Text style={styles.brandMarkText}>MM</Text>
             </View>
+            <Image source={loginArt} style={styles.heroArt} resizeMode="cover" />
+            <StatusPill label="ICT202 - Gemini via Express" tone="ok" />
+            <Text style={styles.title}>MultiMod Meme</Text>
+            <Text style={styles.subtitle}>
+              Generateur de memes intelligent: texte, voix et image, avec humour local camerounais.
+            </Text>
           </View>
 
-          {/* Titre */}
-          <Text style={styles.title}>Bienvenue au Kwatt</Text>
-          <Text style={styles.subtitle}>
-            Connecte-toi pour créer tes mèmes légendaires.
-          </Text>
-
-          {/* Carte formulaire */}
           <View style={styles.formCard}>
-            {/* Boutons sociaux */}
-            <View style={styles.socialSection}>
-              <TouchableOpacity
-                style={styles.socialButton}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.socialIcon}>🔍</Text>
-                <Text style={styles.socialText}>Continuer avec Google</Text>
-              </TouchableOpacity>
+            <Text style={styles.cardTitle}>Connexion rapide</Text>
+            <Text style={styles.cardSubtitle}>
+              Le prototype garde les cles IA cote backend. Le mobile ne parle qu'a l'API Gateway.
+            </Text>
 
-              <TouchableOpacity
-                style={[styles.socialButton, styles.appleButton]}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.appleIcon}>⬛</Text>
-                <Text style={styles.appleText}>Continuer avec Apple</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Divider */}
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OU</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Champs */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
               <TextInput
                 style={styles.input}
-                placeholder="ton-nom@kwatt.cm"
-                placeholderTextColor={COLORS.outline}
+                placeholder="demo@ict202.cm"
+                placeholderTextColor={COLORS.textSecondary}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                autoCorrect={false}
               />
             </View>
 
@@ -104,39 +72,32 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               <View style={styles.passwordRow}>
                 <TextInput
                   style={[styles.input, styles.passwordInput]}
-                  placeholder="••••••••"
-                  placeholderTextColor={COLORS.outline}
+                  placeholder="ict202"
+                  placeholderTextColor={COLORS.textSecondary}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                 />
                 <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.showButton}
+                  onPress={() => setShowPassword(value => !value)}
+                  activeOpacity={0.75}
                 >
-                  <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                  <Text style={styles.showButtonText}>{showPassword ? 'Masquer' : 'Voir'}</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.forgotRow}>
-                <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
-              </TouchableOpacity>
             </View>
 
-            {/* Bouton principal */}
             <AfroButton
-              title="Se connecter"
-              onPress={handleLogin}
-              color={COLORS.primary}
+              title="Entrer dans le studio"
+              onPress={() => navigation.replace('MainTabs')}
+              disabled={!email.trim() || !password.trim()}
             />
           </View>
 
-          {/* Lien inscription */}
-          <View style={styles.signupRow}>
-            <Text style={styles.signupLabel}>Pas encore de compte ? </Text>
-            <TouchableOpacity>
-              <Text style={styles.signupLink}>Crée un compte ici</Text>
-            </TouchableOpacity>
+          <View style={styles.footerStrip}>
+            <Text style={styles.footerText}>Express.js + Multer + Gemini 1.5 Flash</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -154,163 +115,111 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.marginHorizontal,
     paddingVertical: SPACING.xl,
+    justifyContent: 'center',
   },
-
-  // Logo
-  logoContainer: {
+  hero: {
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  brandMark: {
+    width: 86,
+    height: 86,
+    borderRadius: 30,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: SPACING.sm,
     ...ELEVATION.level2,
   },
-  logoEmoji: {
-    fontSize: 36,
-  },
-
-  // Titres
-  title: {
+  brandMarkText: {
     ...FONTS.headlineLg,
-    color: COLORS.textMain,
+    color: COLORS.white,
+  },
+  heroArt: {
+    width: '100%',
+    height: 150,
+    borderRadius: RADII.xl,
+    marginBottom: SPACING.sm,
+    backgroundColor: COLORS.surfaceMuted,
+  },
+  title: {
+    ...FONTS.display,
+    color: COLORS.ink,
     textAlign: 'center',
-    marginBottom: SPACING.xs,
+    marginTop: SPACING.sm,
   },
   subtitle: {
     ...FONTS.bodyMd,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    marginBottom: SPACING.lg,
+    marginTop: SPACING.xs,
+    maxWidth: 330,
   },
-
-  // Carte formulaire
   formCard: {
-    backgroundColor: COLORS.surfaceContainerLow,
+    backgroundColor: COLORS.surface,
     borderRadius: RADII.xl,
     padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     ...ELEVATION.level1,
   },
-
-  // Social
-  socialSection: {
-    marginBottom: SPACING.sm,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 52,
-    borderRadius: RADII.full,
-    borderWidth: 1.5,
-    borderColor: COLORS.outlineVariant,
-    backgroundColor: COLORS.white,
-    marginBottom: SPACING.xs,
-  },
-  socialIcon: {
-    fontSize: 18,
-    marginRight: SPACING.xs,
-  },
-  socialText: {
-    ...FONTS.labelLg,
+  cardTitle: {
+    ...FONTS.title,
     color: COLORS.textMain,
   },
-  appleButton: {
-    backgroundColor: COLORS.textMain,
-    borderColor: COLORS.textMain,
-  },
-  appleIcon: {
-    fontSize: 14,
-    marginRight: SPACING.xs,
-  },
-  appleText: {
-    ...FONTS.labelLg,
-    color: COLORS.white,
-  },
-
-  // Divider
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: SPACING.md,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.outlineVariant,
-  },
-  dividerText: {
-    ...FONTS.labelSm,
+  cardSubtitle: {
+    ...FONTS.bodyMd,
     color: COLORS.textSecondary,
-    marginHorizontal: SPACING.sm,
+    marginTop: 4,
+    marginBottom: SPACING.md,
   },
-
-  // Input
   inputGroup: {
     marginBottom: SPACING.sm,
   },
   inputLabel: {
     ...FONTS.labelSm,
-    color: COLORS.onSurfaceVariant,
-    marginBottom: SPACING.base,
-    marginLeft: SPACING.base,
+    color: COLORS.textSecondary,
+    marginBottom: 6,
   },
   input: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.md,
-    paddingHorizontal: SPACING.sm,
     height: 52,
-    fontSize: 16,
-    color: COLORS.textMain,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.surfaceSoft,
     borderWidth: 1,
-    borderColor: COLORS.surfaceContainerHighest,
+    borderColor: COLORS.border,
+    paddingHorizontal: SPACING.sm,
+    color: COLORS.textMain,
+    fontSize: 15,
   },
   passwordRow: {
     position: 'relative',
   },
   passwordInput: {
-    paddingRight: 52,
+    paddingRight: 88,
   },
-  eyeButton: {
+  showButton: {
     position: 'absolute',
-    right: SPACING.sm,
-    top: 0,
-    bottom: 0,
+    right: 6,
+    top: 6,
+    bottom: 6,
     justifyContent: 'center',
+    paddingHorizontal: SPACING.sm,
+    borderRadius: RADII.sm,
+    backgroundColor: COLORS.primaryContainer,
   },
-  eyeIcon: {
-    fontSize: 20,
-  },
-  forgotRow: {
-    alignItems: 'flex-end',
-    marginTop: SPACING.xs,
-  },
-  forgotText: {
+  showButtonText: {
     ...FONTS.labelSm,
-    color: COLORS.primary,
+    color: COLORS.primaryDark,
   },
-
-  // Inscription
-  signupRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  footerStrip: {
     alignItems: 'center',
-    marginTop: SPACING.lg,
+    marginTop: SPACING.md,
   },
-  signupLabel: {
-    ...FONTS.bodyMd,
+  footerText: {
+    ...FONTS.labelSm,
     color: COLORS.textSecondary,
-  },
-  signupLink: {
-    ...FONTS.labelLg,
-    color: COLORS.primary,
   },
 });
 

@@ -1,29 +1,10 @@
-/**
- * NAVIGATION — AppNavigator
- * Combine un StackNavigator (flux Login → génération → résultat)
- * avec un BottomTabNavigator (navigation principale : Accueil, Galerie, Profil).
- *
- * Architecture :
- *   RootStack
- *   ├── Login (AuthScreen — hors tabs)
- *   ├── MainTabs (BottomTab)
- *   │   ├── Home (Dashboard)
- *   │   ├── Gallery (La Galerie du Kwatt)
- *   │   └── Profile (Mon Profil)
- *   ├── Context (Analyseur de Ndoki — modal / stack)
- *   ├── Voice (La Voix du Kwatt — modal / stack)
- *   ├── Remixer (Remix de Statut — modal / stack)
- *   └── MemeResult (La Consécration — stack)
- */
-
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, MainTabParamList } from './types';
-import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
+import { COLORS, RADII, ELEVATION, FONTS } from '../theme/colors';
 
-// Screens
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ContextScreen from '../screens/ContextScreen';
@@ -32,9 +13,6 @@ import RemixerScreen from '../screens/RemixerScreen';
 import MemeResultScreen from '../screens/MemeResultScreen';
 import GalleryScreen from '../screens/GalleryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-/* ─────────────────────────────────────────────────
- * TAB ICON (Texte-Emoji basé, pas de dépendance externe)
- * ───────────────────────────────────────────────── */
 
 interface TabIconProps {
   icon: string;
@@ -43,26 +21,25 @@ interface TabIconProps {
 }
 
 const TabIcon: React.FC<TabIconProps> = ({ icon, label, focused }) => (
-  <View
-    style={[
-      styles.tabIconContainer,
-      focused && styles.tabIconContainerActive,
-    ]}
-  >
-    <Text style={[styles.tabIconEmoji, focused && styles.tabIconEmojiActive]}>
-      {icon}
-    </Text>
-    <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
-      {label}
-    </Text>
+  <View style={[styles.tabIconContainer, focused && styles.tabIconContainerActive]}>
+    <Text style={[styles.tabIconText, focused && styles.tabIconTextActive]}>{icon}</Text>
+    <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
   </View>
 );
 
-/* ─────────────────────────────────────────────────
- * BOTTOM TAB NAVIGATOR
- * ───────────────────────────────────────────────── */
-
 const Tab = createBottomTabNavigator<MainTabParamList>();
+
+const homeTabIcon = ({ focused }: { focused: boolean }) => (
+  <TabIcon icon="H" label="Accueil" focused={focused} />
+);
+
+const galleryTabIcon = ({ focused }: { focused: boolean }) => (
+  <TabIcon icon="G" label="Galerie" focused={focused} />
+);
+
+const profileTabIcon = ({ focused }: { focused: boolean }) => (
+  <TabIcon icon="P" label="Profil" focused={focused} />
+);
 
 const MainTabNavigator: React.FC = () => (
   <Tab.Navigator
@@ -76,35 +53,25 @@ const MainTabNavigator: React.FC = () => (
       name="Home"
       component={HomeScreen}
       options={{
-        tabBarIcon: ({ focused }) => (
-          <TabIcon icon="🏠" label="Accueil" focused={focused} />
-        ),
+        tabBarIcon: homeTabIcon,
       }}
     />
     <Tab.Screen
       name="Gallery"
       component={GalleryScreen}
       options={{
-        tabBarIcon: ({ focused }) => (
-          <TabIcon icon="🖼️" label="Galerie" focused={focused} />
-        ),
+        tabBarIcon: galleryTabIcon,
       }}
     />
     <Tab.Screen
       name="Profile"
       component={ProfileScreen}
       options={{
-        tabBarIcon: ({ focused }) => (
-          <TabIcon icon="👤" label="Profil" focused={focused} />
-        ),
+        tabBarIcon: profileTabIcon,
       }}
     />
   </Tab.Navigator>
 );
-
-/* ─────────────────────────────────────────────────
- * ROOT STACK NAVIGATOR
- * ───────────────────────────────────────────────── */
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -117,17 +84,8 @@ export const AppNavigator: React.FC = () => (
       animation: 'slide_from_right',
     }}
   >
-    {/* Auth */}
     <Stack.Screen name="Login" component={LoginScreen} />
-
-    {/* Tabs principal */}
-    <Stack.Screen
-      name="MainTabs"
-      component={MainTabNavigator}
-      options={{ animation: 'fade' }}
-    />
-
-    {/* Flux de génération */}
+    <Stack.Screen name="MainTabs" component={MainTabNavigator} options={{ animation: 'fade' }} />
     <Stack.Screen name="Context" component={ContextScreen} />
     <Stack.Screen name="Voice" component={VoiceScreen} />
     <Stack.Screen name="Remixer" component={RemixerScreen} />
@@ -136,48 +94,40 @@ export const AppNavigator: React.FC = () => (
   </Stack.Navigator>
 );
 
-/* ─────────────────────────────────────────────────
- * STYLES
- * ───────────────────────────────────────────────── */
-
 const styles = StyleSheet.create({
-  // Tab Bar
   tabBar: {
     backgroundColor: COLORS.surface,
     borderTopLeftRadius: RADII.lg,
     borderTopRightRadius: RADII.lg,
-    height: 72,
+    height: 76,
     paddingBottom: 8,
     paddingTop: 8,
     borderTopWidth: 0,
     ...ELEVATION.level2,
   },
-
-  // Tab Icon
   tabIconContainer: {
+    minWidth: 78,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.base + 2,
+    paddingVertical: 7,
     borderRadius: RADII.full,
   },
   tabIconContainerActive: {
     backgroundColor: COLORS.primaryContainer,
   },
-  tabIconEmoji: {
-    fontSize: 20,
-    marginBottom: 2,
+  tabIconText: {
+    ...FONTS.labelLg,
+    color: COLORS.textSecondary,
   },
-  tabIconEmojiActive: {
-    fontSize: 22,
+  tabIconTextActive: {
+    color: COLORS.primaryDark,
   },
   tabLabel: {
     ...FONTS.labelSm,
-    color: COLORS.onSurfaceVariant,
+    color: COLORS.textSecondary,
     marginTop: 1,
   },
   tabLabelActive: {
-    color: COLORS.onPrimaryContainer,
-    fontWeight: '700',
+    color: COLORS.primaryDark,
   },
 });

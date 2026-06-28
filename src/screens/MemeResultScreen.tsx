@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,197 +8,139 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  Platform,
-  StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/types';
+import type { MemeResult } from '../types/meme';
+import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
+import { Header, AfroButton, StatusPill } from '../components/SharedComponents';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+type Props = NativeStackScreenProps<RootStackParamList, 'MemeResult'>;
 
-export interface MemeResult {
-  id: string;
-  topText?: string;
-  bottomText?: string;
-  punchline?: string;
-  imageUri?: string;   // URI locale ou URL distante
-  sourceType: 'text' | 'audio' | 'image';
-  createdAt: number;
-}
+const GALLERY_KEY = 'meme_gallery';
 
-interface Props {
-  route: {
-    params: {
-      meme: MemeResult;
-    };
-  };
-  navigation: any;
-}
+const sourceLabel: Record<MemeResult['sourceType'], string> = {
+  text: 'Texte',
+  audio: 'Voix',
+  image: 'Image',
+};
 
-// ─── Composant ───────────────────────────────────────────────────────────────
+const fallbackImages = {
+  text: require('../assets/memes/context_ai.png'),
+  audio: require('../assets/memes/voice_ai.png'),
+  image: require('../assets/memes/remix_ai.png'),
+};
 
-const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
-  const {meme} = route.params;
+const MemeResultScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { meme } = route.params;
   const viewShotRef = useRef<any>(null);
-  const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Sauvegarde automatique dans la galerie locale dès l'arrivée sur l'écran
   useEffect(() => {
-    saveMemeToGallery();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── Sauvegarde dans AsyncStorage ──────────────────────────────────────────
-
-  const saveMemeToGallery = async () => {
-    try {
-      const stored = await AsyncStorage.getItem('meme_gallery');
-      const gallery: MemeResult[] = stored ? JSON.parse(stored) : [];
-
-      // Eviter les doublons
-      const exists = gallery.find(m => m.id === meme.id);
-      if (!exists) {
-        gallery.unshift(meme); // plus récent en premier
-        await AsyncStorage.setItem('meme_gallery', JSON.stringify(gallery));
+    const saveMeme = async (): Promise<void> => {
+      try {
+        const stored = await AsyncStorage.getItem(GALLERY_KEY);
+        const gallery: MemeResult[] = stored ? JSON.parse(stored) : [];
+        if (!gallery.some(item => item.id === meme.id)) {
+          await AsyncStorage.setItem(GALLERY_KEY, JSON.stringify([meme, ...gallery]));
+        }
+        setSaved(true);
+      } catch (error) {
+        console.warn('Erreur sauvegarde galerie', error);
       }
-      setSaved(true);
-    } catch (e) {
-      console.error('Erreur sauvegarde galerie :', e);
-    }
-  };
-
-  // ── Capture de l'écran → URI base64 ──────────────────────────────────────
+    };
+    saveMeme();
+  }, [meme]);
 
   const captureView = async (): Promise<string | null> => {
     try {
-      if (viewShotRef.current && viewShotRef.current.capture) {
-        const uri = await viewShotRef.current.capture();
-        return uri;
-      }
-      return null;
-    } catch (e) {
-      console.error('Erreur capture :', e);
+      const uri = await viewShotRef.current?.capture?.();
+      return uri ?? null;
+    } catch (error) {
+      console.warn('Erreur capture meme', error);
       return null;
     }
   };
 
-  // ── Partage générique (toutes apps) ──────────────────────────────────────
-
-  const handleShare = async () => {
+  const handleShare = async (): Promise<void> => {
     setSharing(true);
     try {
       const uri = await captureView();
       if (!uri) {
-        Alert.alert('Erreur', 'Impossible de capturer le mème.');
+        Alert.alert('Capture impossible', "Le meme n'a pas pu etre capture.");
         return;
       }
 
       await Share.open({
-        title: 'Mon mème généré par IA 🔥',
-        message: meme.punchline || meme.bottomText || 'Regarde ce mème !',
+        title: 'Meme IA',
+        message: meme.punchline || meme.bottomText || 'Regarde ce meme.',
         url: uri,
         type: 'image/png',
       });
-    } catch (e: any) {
-      // L'utilisateur a fermé le panneau de partage → pas une vraie erreur
-      if (e?.message !== 'User did not share') {
-        Alert.alert('Erreur', 'Le partage a échoué.');
+    } catch (error: any) {
+      if (error?.message !== 'User did not share') {
+        Alert.alert('Partage indisponible', 'Le partage a echoue.');
       }
     } finally {
       setSharing(false);
     }
   };
 
-  // ── Partage direct WhatsApp ───────────────────────────────────────────────
-
-  const handleShareWhatsApp = async () => {
+  const handleShareWhatsApp = async (): Promise<void> => {
     setSharing(true);
     try {
       const uri = await captureView();
       if (!uri) {
-        Alert.alert('Erreur', 'Impossible de capturer le mème.');
+        Alert.alert('Capture impossible', "Le meme n'a pas pu etre capture.");
         return;
       }
 
       await Share.shareSingle({
-        title: 'Mon mème IA 🔥',
+        title: 'Meme IA',
         message: meme.punchline || meme.bottomText || '',
         url: uri,
         type: 'image/png',
-       social: 'whatsapp' as any,
+        social: 'whatsapp' as any,
       });
-    } catch (e: any) {
-      Alert.alert(
-        'WhatsApp introuvable',
-        'WhatsApp n\'est pas installé sur cet appareil.',
-      );
+    } catch {
+      Alert.alert('WhatsApp introuvable', "WhatsApp n'est pas installe ou ne peut pas recevoir le partage.");
     } finally {
       setSharing(false);
     }
   };
 
-  // ── Badge source ──────────────────────────────────────────────────────────
-
-  const sourceLabel = {
-    text: '💬 Texte',
-    audio: '🎙️ Voix',
-    image: '🖼️ Image',
-  }[meme.sourceType];
-
-  // ── Rendu ─────────────────────────────────────────────────────────────────
-
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ton Mème 🔥</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Gallery')}
-          style={styles.galleryBtn}>
-          <Text style={styles.galleryIcon}>🗂️</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container}>
+      <Header
+        title="Meme genere"
+        subtitle="Sauvegarde locale et partage direct"
+        onBack={() => navigation.goBack()}
+        rightLabel="Galerie"
+        onRightPress={() => navigation.navigate('Gallery')}
+      />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <StatusPill label={sourceLabel[meme.sourceType]} tone="dark" />
 
-        {/* Badge source */}
-        <View style={styles.sourceBadge}>
-          <Text style={styles.sourceBadgeText}>{sourceLabel}</Text>
-        </View>
-
-        {/* ─── Carte Mème (zone capturée) ─── */}
-        <ViewShot ref={viewShotRef} options={{format: 'png', quality: 1}}>
+        <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1 }}>
           <View style={styles.memeCard}>
-
-            {/* Texte du haut */}
             {meme.topText ? (
               <View style={styles.textOverlayTop}>
                 <Text style={styles.memeText}>{meme.topText.toUpperCase()}</Text>
               </View>
             ) : null}
 
-            {/* Image */}
-            {meme.imageUri ? (
-              <Image
-                source={{uri: meme.imageUri}}
-                style={styles.memeImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.placeholderImage}>
-                <Text style={styles.placeholderEmoji}>😂</Text>
-              </View>
-            )}
+            <Image
+              source={meme.imageUri ? { uri: meme.imageUri } : fallbackImages[meme.sourceType]}
+              style={styles.memeImage}
+              resizeMode="cover"
+            />
 
-            {/* Texte du bas / punchline */}
             {(meme.bottomText || meme.punchline) ? (
               <View style={styles.textOverlayBottom}>
                 <Text style={styles.memeText}>
@@ -209,201 +151,117 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
           </View>
         </ViewShot>
 
-        {/* Punchline complète en dessous */}
-        {meme.punchline ? (
-          <View style={styles.punchlineBox}>
-            <Text style={styles.punchlineText}>"{meme.punchline}"</Text>
+        {meme.transcription ? (
+          <View style={styles.transcriptionBox}>
+            <Text style={styles.boxTitle}>Transcription</Text>
+            <Text style={styles.boxText}>{meme.transcription}</Text>
           </View>
         ) : null}
 
-        {/* Indicateur sauvegarde */}
-        {saved && (
-          <Text style={styles.savedHint}>✅ Sauvegardé dans ta galerie</Text>
-        )}
+        {meme.punchline ? (
+          <View style={styles.punchlineBox}>
+            <Text style={styles.boxTitle}>Punchline</Text>
+            <Text style={styles.boxText}>{meme.punchline}</Text>
+          </View>
+        ) : null}
 
-        {/* ─── Boutons de partage ─── */}
+        {saved ? <Text style={styles.savedHint}>Sauvegarde dans la galerie locale.</Text> : null}
+
         <View style={styles.actionsContainer}>
-
-          {/* Partage WhatsApp */}
-          <TouchableOpacity
-            style={[styles.btn, styles.btnWhatsApp]}
+          <AfroButton title="Partager" onPress={handleShare} disabled={sharing} />
+          <AfroButton
+            title={sharing ? 'Preparation...' : 'Partager sur WhatsApp'}
             onPress={handleShareWhatsApp}
-            disabled={sharing}>
-            {sharing ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.btnText}>📲 Partager sur WhatsApp</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Partage général */}
-          <TouchableOpacity
-            style={[styles.btn, styles.btnShare]}
-            onPress={handleShare}
-            disabled={sharing}>
-            {sharing ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.btnText}>🔗 Partager via...</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Voir la galerie */}
-          <TouchableOpacity
-            style={[styles.btn, styles.btnGallery]}
-            onPress={() => navigation.navigate('Gallery')}>
-            <Text style={styles.btnText}>🗂️ Voir ma galerie</Text>
-          </TouchableOpacity>
-
-          {/* Nouveau mème */}
-          <TouchableOpacity
-            style={[styles.btn, styles.btnNew]}
-            onPress={() => navigation.goBack()}>
-            <Text style={[styles.btnText, {color: '#FF6B35'}]}>
-              ✨ Créer un nouveau mème
-            </Text>
+            color={COLORS.secondary}
+            disabled={sharing}
+          />
+          {sharing ? <ActivityIndicator color={COLORS.primary} /> : null}
+          <TouchableOpacity style={styles.secondaryAction} onPress={() => navigation.navigate('MainTabs')}>
+            <Text style={styles.secondaryActionText}>Creer un autre meme</Text>
           </TouchableOpacity>
         </View>
-
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: COLORS.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? 16 : 50,
-    paddingBottom: 12,
-    backgroundColor: '#0D0D0D',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E1E1E',
-  },
-  backBtn: {padding: 8},
-  backIcon: {fontSize: 22, color: '#FF6B35'},
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  galleryBtn: {padding: 8},
-  galleryIcon: {fontSize: 22},
   scroll: {
-    paddingHorizontal: 16,
-    paddingBottom: 40,
+    paddingHorizontal: SPACING.marginHorizontal,
+    paddingBottom: SPACING.xl,
     alignItems: 'center',
+    gap: SPACING.sm,
   },
-  sourceBadge: {
-    marginTop: 16,
-    marginBottom: 12,
-    backgroundColor: '#1E1E1E',
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#FF6B35',
-  },
-  sourceBadgeText: {
-    color: '#FF6B35',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  // ── Mème card ──
   memeCard: {
-    width: 340,
-    borderRadius: 16,
+    width: '100%',
+    minWidth: 320,
+    maxWidth: 370,
+    borderRadius: RADII.xl,
     overflow: 'hidden',
-    backgroundColor: '#1A1A1A',
-    elevation: 8,
-    shadowColor: '#FF6B35',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    backgroundColor: COLORS.ink,
+    ...ELEVATION.level2,
   },
   memeImage: {
     width: '100%',
-    height: 300,
+    height: 315,
+    backgroundColor: COLORS.surfaceMuted,
   },
-  placeholderImage: {
-    width: '100%',
-    height: 300,
-    backgroundColor: '#1E1E1E',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderEmoji: {fontSize: 80},
   textOverlayTop: {
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    padding: 12,
+    backgroundColor: COLORS.ink,
+    padding: SPACING.sm,
   },
   textOverlayBottom: {
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    padding: 12,
+    backgroundColor: COLORS.ink,
+    padding: SPACING.sm,
   },
   memeText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
+    ...FONTS.title,
+    color: COLORS.white,
     textAlign: 'center',
-    textShadowColor: '#000',
-    textShadowOffset: {width: 1, height: 1},
-    textShadowRadius: 3,
-    letterSpacing: 0.5,
   },
-  // ── Punchline ──
+  transcriptionBox: {
+    width: '100%',
+    backgroundColor: COLORS.secondaryContainer,
+    borderRadius: RADII.lg,
+    padding: SPACING.md,
+  },
   punchlineBox: {
-    marginTop: 16,
-    backgroundColor: '#1A1A1A',
-    borderLeftWidth: 3,
-    borderLeftColor: '#FF6B35',
-    padding: 14,
-    borderRadius: 8,
-    width: 340,
+    width: '100%',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.lg,
+    padding: SPACING.md,
+    borderLeftWidth: 5,
+    borderLeftColor: COLORS.primary,
   },
-  punchlineText: {
-    color: '#CCCCCC',
-    fontSize: 14,
-    fontStyle: 'italic',
-    lineHeight: 22,
+  boxTitle: {
+    ...FONTS.labelLg,
+    color: COLORS.textMain,
+    marginBottom: 4,
+  },
+  boxText: {
+    ...FONTS.bodyMd,
+    color: COLORS.textSecondary,
   },
   savedHint: {
-    marginTop: 10,
-    color: '#4CAF50',
-    fontSize: 12,
-    fontWeight: '600',
+    ...FONTS.labelSm,
+    color: COLORS.primary,
   },
-  // ── Boutons ──
   actionsContainer: {
-    marginTop: 24,
     width: '100%',
-    gap: 12,
+    gap: SPACING.sm,
+    marginTop: SPACING.sm,
   },
-  btn: {
-    borderRadius: 12,
-    paddingVertical: 15,
+  secondaryAction: {
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: SPACING.sm,
   },
-  btnWhatsApp: {backgroundColor: '#25D366'},
-  btnShare: {backgroundColor: '#FF6B35'},
-  btnGallery: {backgroundColor: '#1E1E1E', borderWidth: 1, borderColor: '#333'},
-  btnNew: {backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#FF6B35'},
-  btnText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+  secondaryActionText: {
+    ...FONTS.labelLg,
+    color: COLORS.primaryDark,
   },
 });
 

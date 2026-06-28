@@ -52,6 +52,11 @@ react {
 
     /* Autolinking */
     autolinkLibrariesWithApp()
+
+    // RN 0.86 creates the default host with Hermes at runtime. Keeping the
+    // native Hermes libs packaged prevents a startup crash when hermesc is not
+    // available on Windows and the JS bundle is emitted without bytecode.
+    enableSoCleanup = false
 }
 
 /**
@@ -110,9 +115,9 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation("com.facebook.react:hermes-android")
 
     if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
     }

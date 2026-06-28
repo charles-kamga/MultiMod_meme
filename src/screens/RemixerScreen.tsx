@@ -1,9 +1,3 @@
-/**
- * ÉCRAN : RemixerScreen — Remix de Statut
- * Sélecteur d'image (caméra/galerie), zone de prévisualisation, champ expression.
- * Inspiré de la maquette `remix_de_statut/screen.png`
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -20,7 +14,7 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
-import { Header, AfroButton } from '../components/SharedComponents';
+import { Header, AfroButton, InfoPanel } from '../components/SharedComponents';
 import {
   requestStoragePermission,
   requestCameraPermission,
@@ -32,161 +26,118 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Remixer'>;
 
 const RemixerScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [expression, setExpression] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [expression, setExpression] = useState('Ndem du kwatt');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePickFromGallery = async (): Promise<void> => {
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) {
-      showPermissionDeniedAlert('Galerie Photos');
+      showPermissionDeniedAlert('Galerie photos');
       return;
     }
-
-    // Simuler la sélection d'image (dans un vrai projet: react-native-image-picker)
     setSelectedImage('file:///data/user/0/com.multimodalmemeapp/cache/selected_image.jpg');
   };
 
   const handleTakePhoto = async (): Promise<void> => {
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
-      showPermissionDeniedAlert('Caméra');
+      showPermissionDeniedAlert('Camera');
       return;
     }
-
-    // Simuler la prise de photo
     setSelectedImage('file:///data/user/0/com.multimodalmemeapp/cache/captured_photo.jpg');
   };
 
   const handleSubmitRemix = async (): Promise<void> => {
     if (!selectedImage) {
-      Alert.alert('Oooh !', 'Sélectionne ou capture une image d\'abord.');
+      Alert.alert('Image requise', "Selectionne ou capture une image avant d'envoyer.");
       return;
     }
 
     setIsSubmitting(true);
-    const result = await generateFromImage(
-      selectedImage,
-      expression.trim() || undefined,
-    );
+    const result = await generateFromImage(selectedImage, expression.trim() || undefined);
     setIsSubmitting(false);
 
     if (result.success && result.data) {
-      navigation.navigate('MemeResult', {
-        memeUrl: result.data.memeUrl,
-        punchlineTop: result.data.punchlineTop,
-        punchlineBottom: result.data.punchlineBottom,
-        source: 'remix',
-      });
-    } else {
-      Alert.alert('Erreur', result.error || 'Impossible de remixer l\'image.');
+      navigation.navigate('MemeResult', { meme: result.data });
+      return;
     }
+
+    Alert.alert('Backend indisponible', result.error || "Impossible de remixer l'image.");
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Remix de Statut"
+        title="Status Remixer"
+        subtitle="Image vers punchline superposee"
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Zone de prévisualisation */}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.previewZone}>
           {selectedImage ? (
             <View style={styles.imagePreviewWrapper}>
-              <Image
-                source={{ uri: selectedImage }}
-                style={styles.imagePreview}
-                resizeMode="cover"
-              />
+              <Image source={{ uri: selectedImage }} style={styles.imagePreview} resizeMode="cover" />
+              <View style={styles.previewOverlay}>
+                <Text style={styles.previewText}>PREVIEW REMIX</Text>
+              </View>
               <TouchableOpacity
                 style={styles.removeImageBtn}
                 onPress={() => setSelectedImage(null)}
+                activeOpacity={0.75}
               >
-                <Text style={styles.removeImageText}>✕</Text>
+                <Text style={styles.removeImageText}>Retirer</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.emptyPreview}>
-              <View style={styles.emptyIconCircle}>
-                <Text style={styles.emptyIcon}>🖼️</Text>
-              </View>
+              <Text style={styles.emptyIcon}>IMG</Text>
+              <Text style={styles.emptyTitle}>Aucune image</Text>
               <Text style={styles.emptyText}>
-                Aucun média sélectionné. Capture l'instant ou choisis dans ta galerie.
+                Choisis un statut, une photo ou un screenshot a analyser par le backend.
               </Text>
             </View>
           )}
         </View>
 
-        {/* Boutons Galerie / Photo */}
         <View style={styles.mediaButtonsRow}>
-          <TouchableOpacity
-            style={[styles.mediaButton, { backgroundColor: COLORS.secondary }]}
-            onPress={handlePickFromGallery}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.mediaButtonIcon}>🖼️</Text>
+          <TouchableOpacity style={[styles.mediaButton, styles.galleryButton]} onPress={handlePickFromGallery} activeOpacity={0.85}>
             <Text style={styles.mediaButtonText}>Galerie</Text>
           </TouchableOpacity>
           <View style={styles.mediaButtonSpacer} />
-          <TouchableOpacity
-            style={[styles.mediaButton, { backgroundColor: COLORS.tertiaryContainer }]}
-            onPress={handleTakePhoto}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.mediaButtonIcon}>📷</Text>
-            <Text style={styles.mediaButtonText}>Photo</Text>
+          <TouchableOpacity style={[styles.mediaButton, styles.cameraButton]} onPress={handleTakePhoto} activeOpacity={0.85}>
+            <Text style={styles.mediaButtonText}>Camera</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Champ expression camerounaise */}
         <View style={styles.expressionSection}>
-          <Text style={styles.expressionLabel}>
-            Expression Camerounaise (Optionnel)
-          </Text>
-          <View style={styles.expressionInputContainer}>
-            <TextInput
-              style={styles.expressionInput}
-              placeholder="Ex: Ndem, Akié, C'est le feu..."
-              placeholderTextColor={COLORS.outline}
-              value={expression}
-              onChangeText={setExpression}
-              maxLength={100}
-            />
-            <Text style={styles.expressionInputIcon}>文</Text>
-          </View>
+          <Text style={styles.expressionLabel}>Expression locale optionnelle</Text>
+          <TextInput
+            style={styles.expressionInput}
+            placeholder="Ex: Aki, ndem, on est ensemble..."
+            placeholderTextColor={COLORS.textSecondary}
+            value={expression}
+            onChangeText={setExpression}
+            maxLength={100}
+          />
         </View>
 
-        {/* Info Card */}
-        <View style={styles.tipCard}>
-          <Text style={styles.tipIcon}>💡</Text>
-          <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>Astuce du Studio</Text>
-            <Text style={styles.tipText}>
-              Gemini capte l'essence de ton expression pour créer un meme qui
-              parle au pays.
-            </Text>
-          </View>
+        <View style={styles.panelSpace}>
+          <InfoPanel
+            title="Multer + Gemini Vision"
+            body="Le fichier image part vers POST /generate/remix. Multer gere l'upload, Gemini analyse la scene et le backend renvoie le texte."
+            tone="green"
+          />
         </View>
 
-        {/* Bouton d'action */}
         <View style={styles.actionSection}>
           {isSubmitting ? (
             <View style={styles.submittingRow}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.submittingText}>Remixage en cours...</Text>
+              <Text style={styles.submittingText}>Analyse image en cours...</Text>
             </View>
           ) : (
-            <AfroButton
-              title="Laisser Gemini Analyser ✨"
-              onPress={handleSubmitRemix}
-              color={COLORS.primary}
-              disabled={!selectedImage}
-            />
+            <AfroButton title="Remixer le statut" onPress={handleSubmitRemix} disabled={!selectedImage} />
           )}
         </View>
       </ScrollView>
@@ -206,83 +157,90 @@ const styles = StyleSheet.create({
     padding: SPACING.marginHorizontal,
     paddingBottom: SPACING.xl,
   },
-
-  // Preview Zone
   previewZone: {
-    marginTop: SPACING.sm,
-    borderRadius: RADII.lg,
+    borderRadius: RADII.xl,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: COLORS.outlineVariant,
-    borderStyle: 'dashed',
-    backgroundColor: COLORS.primaryFixed,
-    minHeight: 220,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderStrong,
+    backgroundColor: COLORS.surface,
+    minHeight: 250,
+    ...ELEVATION.level1,
   },
   emptyPreview: {
+    minHeight: 250,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.xl,
   },
-  emptyIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.tertiaryFixed,
-    alignItems: 'center',
-    justifyContent: 'center',
+  emptyIcon: {
+    ...FONTS.headlineMd,
+    color: COLORS.primary,
+    backgroundColor: COLORS.primaryContainer,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: RADII.md,
     marginBottom: SPACING.sm,
   },
-  emptyIcon: {
-    fontSize: 28,
+  emptyTitle: {
+    ...FONTS.title,
+    color: COLORS.textMain,
+    marginBottom: 4,
   },
   emptyText: {
     ...FONTS.bodyMd,
-    color: COLORS.onSurfaceVariant,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
   },
   imagePreviewWrapper: {
     position: 'relative',
   },
   imagePreview: {
     width: '100%',
-    height: 260,
-    borderRadius: RADII.lg - 2,
+    height: 270,
+    backgroundColor: COLORS.surfaceMuted,
+  },
+  previewOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(16, 32, 23, 0.78)',
+    padding: SPACING.sm,
+  },
+  previewText: {
+    ...FONTS.title,
+    color: COLORS.white,
+    textAlign: 'center',
   },
   removeImageBtn: {
     position: 'absolute',
     top: SPACING.xs,
     right: SPACING.xs,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: RADII.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 7,
   },
   removeImageText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '700',
+    ...FONTS.labelSm,
+    color: COLORS.error,
   },
-
-  // Media Buttons
   mediaButtonsRow: {
     flexDirection: 'row',
     marginTop: SPACING.sm,
   },
   mediaButton: {
     flex: 1,
-    flexDirection: 'row',
+    height: 50,
+    borderRadius: RADII.md,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48,
-    borderRadius: RADII.md,
-    ...ELEVATION.level1,
   },
-  mediaButtonIcon: {
-    fontSize: 18,
-    marginRight: SPACING.xs,
+  galleryButton: {
+    backgroundColor: COLORS.primary,
+  },
+  cameraButton: {
+    backgroundColor: COLORS.secondary,
   },
   mediaButtonText: {
     ...FONTS.labelLg,
@@ -291,66 +249,27 @@ const styles = StyleSheet.create({
   mediaButtonSpacer: {
     width: SPACING.sm,
   },
-
-  // Expression
   expressionSection: {
     marginTop: SPACING.md,
   },
   expressionLabel: {
     ...FONTS.labelLg,
-    color: COLORS.onSurfaceVariant,
+    color: COLORS.textMain,
     marginBottom: SPACING.xs,
   },
-  expressionInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: RADII.lg,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceContainerHighest,
-    paddingHorizontal: SPACING.sm,
-  },
   expressionInput: {
-    flex: 1,
-    height: 52,
-    fontSize: 16,
+    height: 54,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: SPACING.sm,
     color: COLORS.textMain,
+    fontSize: 15,
   },
-  expressionInputIcon: {
-    fontSize: 22,
-    color: COLORS.onSurfaceVariant,
-    marginLeft: SPACING.xs,
-  },
-
-  // Tip Card
-  tipCard: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.secondaryContainer,
-    borderRadius: RADII.lg,
-    padding: SPACING.sm,
+  panelSpace: {
     marginTop: SPACING.md,
-    alignItems: 'flex-start',
   },
-  tipIcon: {
-    fontSize: 20,
-    marginRight: SPACING.xs,
-    marginTop: 2,
-  },
-  tipContent: {
-    flex: 1,
-  },
-  tipTitle: {
-    ...FONTS.labelLg,
-    color: COLORS.secondaryMid,
-    marginBottom: SPACING.base,
-  },
-  tipText: {
-    ...FONTS.bodyMd,
-    color: COLORS.onSecondaryContainer,
-    lineHeight: 22,
-  },
-
-  // Action
   actionSection: {
     marginTop: SPACING.lg,
   },
