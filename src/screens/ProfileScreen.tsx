@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import { logoutUser } from '../services/authService';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+const getStorageKey = () => {
+  const uid = auth().currentUser?.uid;
+  return uid ? `memes_${uid}` : 'memes_guest';
+};
 
 const COLORS = {
   primary: '#C84B31',
@@ -12,37 +18,57 @@ const COLORS = {
   cardBg: '#FFFFFF',
 };
 
-const getInitials = (name: string): string => {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return (name[0] || '?').toUpperCase();
-};
-
 export default function ProfileScreen({ navigation }: any) {
   const [memeCount, setMemeCount] = useState(0);
-  const user = auth().currentUser;
-  const displayName = user?.displayName || user?.email || 'Utilisateur';
-  const initials = user?.displayName ? getInitials(user.displayName) : '?';
-  const email = user?.email || '';
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Déconnexion',
-      'Tu es sur de vouloir quitter le kwatt ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Oui, je sors',
-          style: 'destructive',
-          onPress: async () => {
-            await logoutUser();
-            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-          },
-        },
-      ],
-    );
+  const user = auth().currentUser;
+  const userEmail = user?.email || 'Utilisateur';
+  const userName = user?.displayName || userEmail.split('@')[0];
+
+  const getInitials = () => {
+    if (user?.displayName) {
+      const names = user.displayName.split(' ');
+      if (names.length > 1) {
+        return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      }
+      return names[0].substring(0, 2).toUpperCase();
+    }
+    return userEmail.substring(0, 2).toUpperCase();
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchRealMemeCount = async () => {
+        try {
+          const savedMemesRaw = await AsyncStorage.getItem(getStorageKey());
+          if (savedMemesRaw) {
+            const savedMemesArray = JSON.parse(savedMemesRaw);
+            setMemeCount(savedMemesArray.length);
+          } else {
+            setMemeCount(0);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la rÃ©cupÃ©ration des mÃ¨mes :", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchRealMemeCount();
+    }, [])
+  );
+
+  const handleLogout = async () => {
+    try {
+      await auth().signOut();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error("Erreur de dÃ©connexion :", error);
+    }
   };
 
   return (
@@ -54,15 +80,19 @@ export default function ProfileScreen({ navigation }: any) {
 
       <View style={styles.avatarContainer}>
         <View style={styles.initialsAvatar}>
-          <Text style={styles.initialsText}>{initials}</Text>
+          <Text style={styles.initialsText}>{getInitials()}</Text>
         </View>
-        
-        <Text style={styles.userName}>{displayName}</Text>
-        {email ? <Text style={styles.userSubtitle}>{email}</Text> : null}
+        <Text style={styles.userName}>{userName}</Text>
+        <Text style={styles.userSubtitle}>{userEmail}</Text>
+      </View>
 
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{memeCount}</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          ) : (
+            <Text style={styles.statNumber}>{memeCount}</Text>
+          )}
           <Text style={styles.statLabel}>Mèmes générés</Text>
         </View>
       </View>
@@ -80,22 +110,6 @@ export default function ProfileScreen({ navigation }: any) {
           <View style={styles.menuItemLeft}>
             <Ionicons name="earth-outline" size={22} color={COLORS.gray} />
             <Text style={styles.menuItemText}>Préférences de langue</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={styles.menuItemLeft}>
-            <Ionicons name="help-circle-outline" size={22} color={COLORS.gray} />
-            <Text style={styles.menuItemText}>Centre d'aide</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={styles.menuItemLeft}>
-            <Ionicons name="person-add-outline" size={22} color={COLORS.gray} />
-            <Text style={styles.menuItemText}>Inviter un ami</Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color={COLORS.gray} />
         </TouchableOpacity>

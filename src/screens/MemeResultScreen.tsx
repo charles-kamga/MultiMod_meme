@@ -15,6 +15,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
+
+const getStorageKey = () => {
+  const uid = auth().currentUser?.uid;
+  return uid ? `memes_${uid}` : 'memes_guest';
+};
 
 export interface MemeResult {
   id: string;
@@ -83,6 +89,7 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
 
   const viewShotRef = useRef<any>(null);
   const [sharing, setSharing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -95,13 +102,13 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
 
   const saveMemeToGallery = async () => {
     try {
-      const stored = await AsyncStorage.getItem('meme_gallery');
+      const stored = await AsyncStorage.getItem(getStorageKey());
       const gallery: MemeResult[] = stored ? JSON.parse(stored) : [];
 
       const exists = gallery.find(m => m.id === meme.id);
       if (!exists) {
         gallery.unshift(meme);
-        await AsyncStorage.setItem('meme_gallery', JSON.stringify(gallery));
+        await AsyncStorage.setItem(getStorageKey(), JSON.stringify(gallery));
       }
       setSaved(true);
     } catch (e) {
@@ -169,6 +176,32 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
       );
     } finally {
       setSharing(false);
+    }
+  };
+
+  const exportToWhatsAppSticker = async () => {
+    setIsExporting(true);
+    try {
+      const uri = await captureView();
+      if (!uri) {
+        Alert.alert('Erreur', 'Impossible de capturer le mème.');
+        return;
+      }
+
+      await Share.shareSingle({
+        title: 'Mon sticker IA',
+        message: meme.punchline || meme.bottomText || '',
+        url: uri,
+        type: 'image/png',
+        social: 'whatsappsticker',
+      });
+    } catch {
+      Alert.alert(
+        'WhatsApp introuvable',
+        'WhatsApp n\'est pas installé sur cet appareil.',
+      );
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -263,6 +296,20 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Ionicons name="logo-whatsapp" size={18} color="#FFF" style={{marginRight: 8}} />
                 <Text style={styles.btnText}>Partager sur WhatsApp</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.btn, styles.btnSticker]}
+            onPress={exportToWhatsAppSticker}
+            disabled={isExporting}>
+            {isExporting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Ionicons name="logo-whatsapp" size={18} color="#FFF" style={{marginRight: 8}} />
+                <Text style={styles.btnText}>Exporter en sticker</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -431,6 +478,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnWhatsApp: {backgroundColor: '#25D366'},
+  btnSticker: {backgroundColor: '#075E54'},
   btnShare: {backgroundColor: '#FF6B35'},
   btnGallery: {backgroundColor: '#1E1E1E', borderWidth: 1, borderColor: '#333'},
   btnNew: {backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#FF6B35'},

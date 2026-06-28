@@ -14,8 +14,14 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
 import {useFocusEffect} from '@react-navigation/native';
 import type {MemeResult} from './MemeResultScreen';
+
+const getStorageKey = () => {
+  const uid = auth().currentUser?.uid;
+  return uid ? `memes_${uid}` : 'memes_guest';
+};
 
 const {width} = Dimensions.get('window');
 const CARD_SIZE = (width - 48) / 2;
@@ -33,7 +39,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
   const loadGallery = async () => {
     setLoading(true);
     try {
-      const stored = await AsyncStorage.getItem('meme_gallery');
+      const stored = await AsyncStorage.getItem(getStorageKey());
       const data: MemeResult[] = stored ? JSON.parse(stored) : [];
       setGallery(data);
     } catch (e) {
@@ -55,7 +61,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
           onPress: async () => {
             const updated = gallery.filter(m => m.id !== id);
             setGallery(updated);
-            await AsyncStorage.setItem('meme_gallery', JSON.stringify(updated));
+            await AsyncStorage.setItem(getStorageKey(), JSON.stringify(updated));
           },
         },
       ],
@@ -73,7 +79,7 @@ const GalleryScreen: React.FC<{navigation: any}> = ({navigation}) => {
           style: 'destructive',
           onPress: async () => {
             setGallery([]);
-            await AsyncStorage.removeItem('meme_gallery');
+            await AsyncStorage.removeItem(getStorageKey());
           },
         },
       ],

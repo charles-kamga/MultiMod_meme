@@ -151,7 +151,7 @@ const ContextScreen: React.FC<Props> = ({ navigation }) => {
           {isLoading ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Le ndem opère...</Text>
+              <Text style={styles.loadingText}>Le feeling opère...</Text>
             </View>
           ) : (
             <AfroButton
