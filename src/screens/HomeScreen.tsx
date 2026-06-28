@@ -1,3 +1,10 @@
+/**
+ * ÉCRAN : HomeScreen — Tableau de bord "Meme Studio"
+ * Affiche un carrousel d'astuces et une grille de 3 modes de création
+ * (Context Reader, Voice-to-Meme, Status Remixer).
+ * Point d'entrée principal après connexion.
+ */
+
 import React from 'react';
 import {
   View,

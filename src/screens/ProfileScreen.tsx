@@ -1,3 +1,10 @@
+/**
+ * ÉCRAN : ProfileScreen — Profil utilisateur
+ * Affiche les informations du compte (nom, email, avatar avec initiales),
+ * le nombre de mèmes générés (issu d'AsyncStorage) et les options
+ * de paramètres, langue et déconnexion.
+ */
+
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -42,7 +49,7 @@ export default function ProfileScreen({ navigation }: any) {
             setMemeCount(0);
           }
         } catch (error) {
-          console.error("Erreur lors de la rÃ©cupÃ©ration des mÃ¨mes :", error);
+          console.error("Erreur lors de la récupération des mèmes :", error);
         } finally {
           setLoading(false);
         }
@@ -56,7 +63,7 @@ export default function ProfileScreen({ navigation }: any) {
     try {
       await auth().signOut();
     } catch (error) {
-      console.error("Erreur de dÃ©connexion :", error);
+      console.error("Erreur de déconnexion :", error);
     }
   };
 

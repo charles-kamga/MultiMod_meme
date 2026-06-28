@@ -1,25 +1,31 @@
+/**
+ * Couche de communication avec l'API Gateway Express.
+ * Utilise Axios comme client HTTP principal (avec fallback fetch pour l'audio).
+ * Tous les appels pointent vers https://meme-project-kappa.vercel.app/api.
+ */
+
 import axios from 'axios';
 
-// 1. Nouvelle URL officielle sur Vercel
 const api = axios.create({
   baseURL: 'https://meme-project-kappa.vercel.app/api',
-  timeout: 30000, // On passe à 30s car les serveurs gratuits Vercel peuvent être lents au réveil
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 /**
- * MODULE TEXTE (Context Reader)
+ * Envoie un texte à l'API pour générer un mème (Context Reader / Analyseur de Ndoki).
+ * Le mood est préfixé au texte pour que l'IA reçoive le contexte émotionnel.
+ *
+ * @param text - Le contenu textuel à analyser
+ * @param mood - L'ambiance choisie (clash, ndolo, nyanga, sarcasme)
  */
 export const sendContextText = async (text: string, mood: string) => {
   try {
-    // ALERTE DAVE : Le serveur attend 'textInput'
-    // On lui envoie le texte combiné avec le mood pour que Gemini ait tout le contexte
-    const response = await api.post('/context/text', { 
-      textInput: `[Mood: ${mood}] ${text}` 
+    const response = await api.post('/context/text', {
+      textInput: `[Mood: ${mood}] ${text}`,
     });
-    
     return response.data;
   } catch (error) {
     console.error("Erreur lors de l'envoi du texte :", error);
@@ -28,39 +34,11 @@ export const sendContextText = async (text: string, mood: string) => {
 };
 
 /**
- * MODULE AUDIO (Voice-to-Meme) — Version Axios
- */
-export const sendVoiceAudio = async (fileUri: string) => {
-  try {
-    const formData = new FormData();
-
-    formData.append('audioInput', {
-      uri: fileUri,
-      type: 'audio/wav',
-      name: 'voice_recording.wav',
-    } as any);
-
-    const response = await api.post('/context/audio', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error("Erreur lors de l'envoi de l'audio :", error);
-    throw error;
-  }
-};
-
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-/**
- * MODULE AUDIO — Version Fetch (Dave)
+ * Envoie un fichier audio à l'API (Voice-to-Meme / La Voix du Kwatt).
+ * Utilise `fetch` directement car FormData + Axios peut causer des conflits de boundary.
+ *
+ * @param audioFilePath - URI locale du fichier audio enregistré
+ * @param mimeType - Type MIME de l'audio (défaut: audio/m4a)
  */
 export async function generateFromVoice(
   audioFilePath: string,
@@ -93,29 +71,36 @@ export async function generateFromVoice(
 }
 
 /**
- * MODULE IMAGE (Status Remixer - Image to Image)
+ * Envoie une image (et un texte optionnel) à l'API pour remixer en mème
+ * (Status Remixer / Remix de Statut).
+ *
+ * @param uri - URI locale de l'image
+ * @param fileName - Nom du fichier
+ * @param type - Type MIME de l'image
+ * @param textPrompt - Texte d'expression camerounaise (optionnel)
  */
 export const sendImageRemix = async (uri: string, fileName: string, type: string, textPrompt: string) => {
   try {
     const formData = new FormData();
 
-    // 1. On ajoute le texte d'ambiance (champ 'textInput' demandé par Dave)
     formData.append('textInput', textPrompt || "Remix ce statut");
 
-    // 2. On prépare et on ajoute le fichier image (champ 'imagesInputs' demandé par Dave)
     formData.append('imagesInputs', {
       uri: uri,
       name: fileName || 'upload.jpg',
       type: type || 'image/jpeg',
     } as any);
 
-    // 3. Envoi de la requête multipart
-    // Note : On ne force PAS le Content-Type pour laisser Axios gérer le boundary
     const response = await api.post('/context/text', formData);
-
     return response.data;
   } catch (error) {
     console.error("Erreur lors de l'envoi du Remix Image :", error);
     throw error;
   }
 };
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}

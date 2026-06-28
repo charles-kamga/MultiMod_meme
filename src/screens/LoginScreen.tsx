@@ -1,6 +1,7 @@
 /**
  * ÉCRAN : LoginScreen — Connexion au Kwatt
- * Interface d'accueil épurée et chaleureuse.
+ * Interface d'accueil avec formulaire email/mot de passe + bouton Google Sign-In.
+ * La navigation automatique est gérée par onAuthStateChanged dans AppNavigator.
  * Inspiré de la maquette `connexion_au_kwatt/screen.png`
  */
 
@@ -17,13 +18,14 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, RADII, ELEVATION, FONTS } from '../theme/colors';
 import { AfroButton } from '../components/SharedComponents';
-import { loginWithEmail } from '../services/authService';
+import { loginWithEmail, loginWithGoogle } from '../services/authService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -32,6 +34,18 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
+
+  const handleGoogleLogin = async (): Promise<void> => {
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message || 'Une erreur est survenue lors de la connexion avec Google.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleLogin = async (): Promise<void> => {
     if (!email.trim() || !password) {
@@ -41,9 +55,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(true);
     const result = await loginWithEmail(email, password);
     setLoading(false);
-    if (result.success) {
-      // Navigué automatiquement par onAuthStateChanged dans AppNavigator
-    } else {
+    if (!result.success) {
       Alert.alert('Erreur', result.error);
     }
   };
@@ -59,41 +71,21 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Logo */}
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
-              <Ionicons name="sparkles" size={36} color={COLORS.white} />
+              <Image
+                source={require('../assets/images/logo.png')}
+                style={{ width: 120, height: 120 }}
+              />
             </View>
           </View>
 
-          {/* Titre */}
           <Text style={styles.title}>Bienvenue au Kwatt</Text>
           <Text style={styles.subtitle}>
             Connecte-toi pour créer tes mèmes légendaires.
           </Text>
 
-          {/* Carte formulaire */}
           <View style={styles.formCard}>
-            {/* Boutons sociaux */}
-            <View style={styles.socialSection}>
-              <TouchableOpacity
-                style={styles.socialButton}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="logo-google" size={18} color={COLORS.textMain} style={{ marginRight: SPACING.xs }} />
-                <Text style={styles.socialText}>Continuer avec Google</Text>
-              </TouchableOpacity>
-
-            </View>
-
-            {/* Divider */}
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OU</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Champs */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Email</Text>
               <TextInput
@@ -132,7 +124,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Bouton principal */}
             {loading ? (
               <View style={styles.loadingRow}>
                 <ActivityIndicator size="large" color={COLORS.primary} />
@@ -144,9 +135,24 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 color={COLORS.primary}
               />
             )}
+
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={handleGoogleLogin}
+              activeOpacity={0.8}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator size="small" color={COLORS.textMain} />
+              ) : (
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                  <Ionicons name="logo-google" size={20} color="#EA4335" style={{marginRight: 10}} />
+                  <Text style={styles.googleButtonText}>Se connecter avec Google</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
 
-          {/* Lien inscription */}
           <View style={styles.signupRow}>
             <Text style={styles.signupLabel}>Pas encore de compte ? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
@@ -180,13 +186,10 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.primary,
+    width: 120,
+    height: 120,
     alignItems: 'center',
     justifyContent: 'center',
-    ...ELEVATION.level2,
   },
   // Titres
   title: {
@@ -208,42 +211,6 @@ const styles = StyleSheet.create({
     borderRadius: RADII.xl,
     padding: SPACING.md,
     ...ELEVATION.level1,
-  },
-
-  // Social
-  socialSection: {
-    marginBottom: SPACING.sm,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 52,
-    borderRadius: RADII.full,
-    borderWidth: 1.5,
-    borderColor: COLORS.outlineVariant,
-    backgroundColor: COLORS.white,
-    marginBottom: SPACING.xs,
-  },
-  socialText: {
-    ...FONTS.labelLg,
-    color: COLORS.textMain,
-  },
-  // Divider
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: SPACING.md,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.outlineVariant,
-  },
-  dividerText: {
-    ...FONTS.labelSm,
-    color: COLORS.textSecondary,
-    marginHorizontal: SPACING.sm,
   },
 
   // Input
@@ -291,6 +258,21 @@ const styles = StyleSheet.create({
   loadingRow: {
     alignItems: 'center',
     padding: SPACING.md,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 52,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceContainerHighest,
+    backgroundColor: COLORS.white,
+    marginTop: SPACING.sm,
+  },
+  googleButtonText: {
+    ...FONTS.labelLg,
+    color: COLORS.textMain,
   },
 
   // Inscription

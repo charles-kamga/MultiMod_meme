@@ -1,3 +1,9 @@
+/**
+ * ÉCRAN : RegisterScreen — Inscription au Kwatt
+ * Formulaire d'inscription complet (nom, email, mot de passe, confirmation).
+ * La navigation automatique est gérée par onAuthStateChanged dans AppNavigator.
+ */
+
 import React, { useState } from 'react';
 import {
   View,
@@ -11,6 +17,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -51,9 +58,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     const result = await registerWithEmail(email, password, fullName.trim());
     setLoading(false);
 
-    if (result.success) {
-      // Navigué automatiquement par onAuthStateChanged dans AppNavigator
-    } else {
+    if (!result.success) {
       Alert.alert('Erreur', result.error);
     }
   };
@@ -71,7 +76,10 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         >
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
-              <Ionicons name="sparkles" size={36} color={COLORS.white} />
+              <Image
+                source={require('../assets/images/logo.png')}
+                style={{ width: 120, height: 120 }}
+              />
             </View>
           </View>
 
@@ -187,13 +195,10 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.primary,
+    width: 120,
+    height: 120,
     alignItems: 'center',
     justifyContent: 'center',
-    ...ELEVATION.level2,
   },
   title: {
     ...FONTS.headlineLg,

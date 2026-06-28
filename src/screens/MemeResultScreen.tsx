@@ -1,3 +1,10 @@
+/**
+ * ÉCRAN : MemeResultScreen — Résultat du mème généré
+ * Affiche le mème (texte + image + punchline), permet de le partager,
+ * de l'exporter en sticker WhatsApp, et le sauvegarde automatiquement
+ * dans la galerie locale (AsyncStorage).
+ */
+
 import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
@@ -98,7 +105,6 @@ const MemeResultScreen: React.FC<Props> = ({route, navigation}) => {
       return;
     }
     saveMemeToGallery();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceType]);
 
   const saveMemeToGallery = async () => {

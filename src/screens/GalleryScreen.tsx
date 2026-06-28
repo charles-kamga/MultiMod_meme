@@ -1,3 +1,10 @@
+/**
+ * ÉCRAN : GalleryScreen — Galerie des mèmes sauvegardés
+ * Affiche une grille 2 colonnes des mèmes générés, stockés localement
+ * via AsyncStorage. Supporte la suppression individuelle (appui long)
+ * et la suppression totale. Les données sont rechargées à chaque focus.
+ */
+
 import React, {useCallback, useState} from 'react';
 import {
   View,

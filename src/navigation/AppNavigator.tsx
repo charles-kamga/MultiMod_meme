@@ -1,3 +1,12 @@
+/**
+ * Navigateur principal de l'application AFROMEME.
+ * Utilise un Stack Navigator racine qui alterne entre :
+ * - Auth Stack (Login / Register) si l'utilisateur n'est pas connecté
+ * - Main Stack (Tabs + écrans de création) si l'utilisateur est authentifié
+ *
+ * L'état d'authentification est écouté via Firebase `onAuthStateChanged`.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -18,6 +27,10 @@ import ProfileScreen from '../screens/ProfileScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+/**
+ * Bottom Tab Navigator : Accueil, Galerie, Profil.
+ * Chaque onglet affiche une icône Ionicons différente selon l'état (focus ou non).
+ */
 const MainTabs = () => {
   return (
     <Tab.Navigator
@@ -55,6 +68,12 @@ const MainTabs = () => {
   );
 };
 
+/**
+ * Navigateur racine. Écoute l'état d'authentification Firebase et affiche :
+ * - Un écran de chargement pendant la vérification initiale
+ * - Les écrans d'auth (Login/Register) si non connecté
+ * - Les écrans principaux (Tabs + création) si connecté
+ */
 export const AppNavigator = () => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);

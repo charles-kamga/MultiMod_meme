@@ -1,79 +1,131 @@
-# 📱 Multimodal Meme App - Frontend Mobile (React Native CLI)
+# Projet AFROMEME — Générateur de Memes Multimodal
 
-Bienvenue sur le dépôt du client mobile de notre **Générateur de Memes Multimodal**[cite: 1]. Cette application est développée en **React Native CLI (TypeScript)** et est optimisée pour **Android**[cite: 1].
+**AFROMEME** est une application mobile de génération de mèmes par intelligence artificielle, développée dans le cadre du cours **ICT202 — Programmation Mobile** (Groupe 8, G2).
 
-Elle intègre une interface utilisateur moderne inspirée de la culture et du design africain (Afro-UX Chaleureux) et communique exclusivement avec notre API Gateway Express.js pour transformer les textes, audios et images en mèmes cultes du kwatt.
-
----
-
-## 🎨 Charte Graphique (Afro-UX Modern)
-
-Pour assurer la cohérence visuelle pendant le développement des écrans, respectez la palette de couleurs mutes et chaleureuses :
-* **Background Global** : `#FAF6F0` (Ivoire / Crème doux)
-* **Couleur Primaire** : `#C84B31` (Terracotta / Terre Cuite)
-* **Couleur Secondaire** : `#1B4232` (Vert Forêt Tropicale)
-* **Accents** : `#F4A261` (Ocre Jaune / Or Chaud)
-* **Textes / Titres** : `#1A1A1A` (Charbon Profond)
+L'application permet de créer des mèmes humoristiques à partir de **trois modes de saisie** : texte (Context Reader), voix (Voice-to-Meme) et image (Status Remixer). Le tout est habillé d'une interface utilisateur "Afro-UX" aux couleurs chaleureuses inspirées des cultures d'Afrique de l'Ouest.
 
 ---
 
-## 📁 Structure du Code Source (`/src`)
+## Fonctionnalités
 
-Le projet est modularisé pour permettre à plusieurs développeurs de travailler simultanément sans créer de conflits Git :
+- **Context Reader (Analyseur de Ndoki)** : Saisis ou colle une discussion, choisis un mood (Clash, Ndolo, Nyanga, Sarcasme) et laisse l'IA générer un mème avec une punchline et une image originale.
+- **Voice-to-Meme (La Voix du Kwatt)** : Enregistre un message vocal, écoute-le, puis envoie-le à l'IA qui le transcrit et génère un mème adapté.
+- **Status Remixer (Remix de Statut)** : Prends une photo (galerie ou caméra), ajoute une expression camerounaise optionnelle, et l'IA remixe l'image en mème personnalisé (avec face-swap InstantID).
+- **Galerie locale** : Tous les mèmes générés sont automatiquement sauvegardés dans une galerie locale (AsyncStorage) avec possibilité de suppression individuelle ou totale.
+- **Partage & Export** : Partage tes mèmes via les applications systèmes ou exporte-les en tant que sticker WhatsApp.
+- **Authentification Firebase** : Connexion email/mot de passe ou Google Sign-In.
 
-```text
-src/
-├── components/       # Composants d'UI réutilisables (Boutons, Cartes, Loaders)
-├── screens/          # Écrans principaux de l'application (Architecture Core)
-│   ├── HomeScreen.tsx         # Dashboard d'accueil et choix du canal
-│   ├── ContextScreen.tsx      # Module Texte (Context Reader)
-│   ├── VoiceScreen.tsx        # Module Audio (Voice-to-Meme)
-│   ├── RemixerScreen.tsx      # Module Image (Status Remixer)
-│   └── MemeResultScreen.tsx   # Écran de rendu du mème finalisé et partage
-├── navigation/       # Configuration des flux de navigation (React Navigation Stack)
-├── services/         # Client API (Configuration d'Axios pour les requêtes vers le serveur)
-├── hooks/            # Hooks personnalisés (Gestion des permissions, Enregistreur Audio)
-└── utils/            # Fonctions d'aide (Formatage, constantes de style)
+---
+
+## Architecture Technique
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    APPLICATION MOBILE                    │
+│              React Native CLI (TypeScript)               │
+│                                                          │
+│  Screens : Home / Context / Voice / Remixer / Result     │
+│  Services : API Client (Axios) / Firebase Auth           │
+│  Storage : AsyncStorage (galerie locale)                 │
+│  Permissions : Microphone, Stockage, Caméra              │
+└──────────────────┬──────────────────────────────────────┘
+                   │ Requêtes HTTP (JSON / FormData)
+                   ▼
+┌─────────────────────────────────────────────────────────┐
+│                  API GATEWAY (Express.js)                 │
+│                                                          │
+│  Middleware : CORS, Multer (upload fichiers)             │
+│  Routes POST /api/context/text                          │
+│         POST /api/context/audio                         │
+│         GET  /api/health                                │
+│                                                          │
+│  Services externes :                                     │
+│  ┌──────────┐  ┌───────────┐  ┌──────────────┐         │
+│  │  Gemini  │  │  Fal.ai   │  │  Cloudinary  │         │
+│  │ (Google) │  │(Flux/ID)  │  │ (Hébergement)│         │
+│  └──────────┘  └───────────┘  └──────────────┘         │
+│                                                          │
+│  Persistance : Firebase Firestore (historique)           │
+└─────────────────────────────────────────────────────────┘
 ```
 
+### Stack utilisée
+
+| Composant      | Technologie                                                |
+|----------------|------------------------------------------------------------|
+| Frontend       | React Native CLI 0.86 (TypeScript)                         |
+| Navigation     | React Navigation (Native Stack + Bottom Tabs)              |
+| Authentification | Firebase Authentication (email + Google)                  |
+| Client HTTP    | Axios + Fetch (fallback audio)                             |
+| Backend        | Node.js / Express 5                                       |
+| Upload fichiers | Multer (stockage mémoire)                                 |
+| IA (Texte)     | Google Gemini (modèles Flash / Pro avec fallback)          |
+| IA (Image)     | Fal.ai — Flux Schnell (texte→image) / InstantID (face-swap) |
+| Hébergement média | Cloudinary                                              |
+| Base de données | Firebase Firestore                                         |
+
 ---
 
-## 🛠️ Configuration et Lancement (Émulateur ou Téléphone Physique)
+## Prérequis
 
-### 🧱 Prérequis
+Avant de commencer, assure-toi d'avoir installé sur ta machine :
 
-* Node.js (Version 18 ou supérieure recommandée)
-* Android Studio installé et configuré avec un émulateur Android (AVD).
-* Variables d'environnement ANDROID_HOME et outils SDK configurés dans votre système.
+- **Node.js** v22.11.0 ou supérieure (recommandé)
+- **npm** ou **yarn**
+- **Android Studio** (avec SDK Android, émulateur AVD)
+- **Java JDK 17** (requis par React Native CLI)
+- **Git**
 
-### 1. Installation des Dépendances
+Pour le développement mobile, configure les variables d'environnement Android (`ANDROID_HOME`, `platform-tools`).
 
-À la racine du dossier frontend, exécutez la commande suivante pour installer les packages requis :
+---
+
+## Installation et Lancement
+
+### 1. Cloner le dépôt
 
 ```bash
+git clone <url-du-depot>
+cd MultimodalMemeApp
+```
+
+### 2. Backend — API Gateway
+
+Le backend se trouve dans le dossier `meme_clean/meme_project/`.
+
+```bash
+cd meme_clean/meme_project
 npm install
 ```
 
-### 2. Liaison avec le Serveur Backend Express.js
+Crée le fichier `.env` à la racine du dossier backend (voir section Configuration).
 
-Pour que l'application mobile puisse communiquer avec l'API, vous devez configurer l'adresse IP cible.
+Pour lancer le serveur en développement :
 
-Ouvrez le fichier de configuration de vos services d'API (généralement situé dans `src/services/api.ts`).
-
-Configurez l'URL de base pour pointer vers le serveur de développement.
-
-⚠️ **Note Critique pour l'Émulateur Android** : N'utilisez pas `localhost` ou `127.0.0.1` car l'émulateur Android possède sa propre boucle locale virtuelle. Utilisez l'adresse IP de redirection d'Android Studio :
-
-```typescript
-export const BASE_URL = "http://10.0.2.2:5000/api";
+```bash
+npm run dev
 ```
 
-> Si vous testez sur un **téléphone physique**, remplacez `10.0.2.2` par l'adresse IP locale de la machine qui héberge le serveur Express (ex: `http://192.168.1.50:5000/api`), et assurez-vous que le téléphone et le PC partagent le même réseau Wi-Fi.
+Le serveur démarre sur `http://localhost:5000` (ou le port défini dans `.env`).
 
-### 3. Exécution de l'Application
+### 3. Frontend — Application Mobile
 
-1. Démarrez votre émulateur Android ou connectez votre smartphone physique en mode débogage USB.
-2. Lancez le serveur de bundle (Metro Bundler) et déployez l'application sur votre appareil :
+```bash
+# Depuis la racine du projet
+npm install
+```
+
+Configure l'URL de l'API dans `src/services/api.ts` :
+
+```typescript
+// Pour l'émulateur Android (ne pas utiliser localhost)
+baseURL: 'http://10.0.2.2:5000/api'
+
+// Pour un téléphone physique sur le même réseau Wi-Fi
+baseURL: 'http://192.168.x.x:5000/api'  // Remplace par l'IP locale du serveur
+```
+
+Lance l'application sur l'émulateur ou un appareil physique :
 
 ```bash
 npx react-native run-android
@@ -81,16 +133,97 @@ npx react-native run-android
 
 ---
 
-## 🔒 Gestion des Permissions Android
+## Configuration des Variables d'Environnement
 
-L'application exploite deux capteurs matériels stratégiques. Le code intègre des vérifications asynchrones via `PermissionsAndroid` pour :
+Crée un fichier `.env` dans le dossier `meme_clean/meme_project/` avec les variables suivantes :
 
-* **Le Microphone (RECORD_AUDIO)** : Requis pour capturer les notes vocales du module Voice-to-Meme[cite: 1, 2].
-* **Le Stockage / La Galerie (READ_EXTERNAL_STORAGE / READ_MEDIA_IMAGES)** : Requis pour sélectionner les images du module Status Remixer[cite: 1, 2].
+| Variable                  | Description                                      | Obligatoire |
+|---------------------------|--------------------------------------------------|-------------|
+| `PORT`                    | Port du serveur (défaut : 5000)                  | Non         |
+| `GEMINI_API_KEY`          | Clé d'API Google Gemini                          | Oui         |
+| `FAL_KEY`                 | Clé d'API Fal.ai (format : `key:id`)            | Oui         |
+| `CLOUDINARY_CLOUD_NAME`   | Nom du cloud Cloudinary                          | Oui         |
+| `CLOUDINARY_API_KEY`      | Clé d'API Cloudinary                             | Oui         |
+| `CLOUDINARY_API_SECRET`   | Secret d'API Cloudinary                          | Oui         |
 
-# EN CE QUI CONCERNE LA REPARTITION DES TACHES:
-## [Tâche 2] Dashboard & Studio - Serena (85)
-- **Écran d'accueil :** Création du hub central "Meme Studio" pour diriger vers les fonctions de l'IA.
-- **UI/UX :** Implémentation d'un carrousel fluide (FlatList) pour les astuces de l'application.
-- **Originalité :** Adaptation de l'interface avec le langage local (Mode VOUP VAP, Jimpat) pour coller au projet Afromeme.
-- **Navigation :** Branchement des boutons vers les écrans 'Context', 'Voice' et 'Remixer'.
+**Fichier `.env` d'exemple :**
+
+```env
+PORT=5000
+GEMINI_API_KEY=ta_cle_gemini_ici
+FAL_KEY=ta_cle_fal_ici
+CLOUDINARY_CLOUD_NAME=ton_cloud_name
+CLOUDINARY_API_KEY=ton_api_key
+CLOUDINARY_API_SECRET=ton_api_secret
+```
+
+### Où obtenir les clés ?
+
+| Service    | URL d'inscription                                         |
+|------------|-----------------------------------------------------------|
+| Google AI (Gemini) | https://aistudio.google.com/app/apikey              |
+| Fal.ai     | https://fal.ai/dashboard                                   |
+| Cloudinary | https://cloudinary.com/console                             |
+
+### Fichier Firebase Service Account
+
+Place également le fichier `firebase-service-account.json` (téléchargeable depuis la console Firebase → Paramètres du projet → Comptes de service → Générer une nouvelle clé privée) dans le dossier `meme_clean/meme_project/`.
+
+---
+
+## Structure du Projet
+
+```
+MultimodalMemeApp/
+├── App.tsx                          # Point d'entrée React Native
+├── src/
+│   ├── screens/                     # Écrans de l'application
+│   │   ├── HomeScreen.tsx           # Tableau de bord
+│   │   ├── LoginScreen.tsx          # Connexion
+│   │   ├── RegisterScreen.tsx       # Inscription
+│   │   ├── ContextScreen.tsx        # Analyse de texte
+│   │   ├── VoiceScreen.tsx          # Enregistrement vocal
+│   │   ├── RemixerScreen.tsx        # Remix d'image
+│   │   ├── MemeResultScreen.tsx     # Résultat du mème
+│   │   ├── GalleryScreen.tsx        # Galerie locale
+│   │   └── ProfileScreen.tsx        # Profil utilisateur
+│   ├── components/
+│   │   └── SharedComponents.tsx      # Design system (AfroButton, Header, MoodChip...)
+│   ├── navigation/
+│   │   ├── AppNavigator.tsx         # Navigation stack + tabs
+│   │   └── types.ts                 # Types TypeScript pour les routes
+│   ├── services/
+│   │   ├── api.ts                   # Client HTTP (Axios) pour l'API Gateway
+│   │   └── authService.ts           # Service Firebase Auth
+│   ├── theme/
+│   │   └── colors.ts                # Tokens de design (couleurs, espacement, typo)
+│   └── utils/
+│       └── permissions.ts           # Gestion des permissions Android
+│
+├── meme_clean/meme_project/         # Backend Express.js
+│   ├── server.js                    # API Gateway
+│   ├── package.json
+│   ├── .env                         # Variables d'environnement (clés API)
+│   └── firebase-service-account.json
+│
+└── README.md                        # Ce fichier
+```
+
+---
+
+## Équipe
+
+**ICT202 — Groupe 8, G2** — Projet universitaire de génération de mèmes multimodale.
+
+- Frontend React Native : [Membres de l'équipe]
+- Backend Express.js / API Gateway : [Membres de l'équipe]
+- Design Afro-UX : [Membres de l'équipe]
+
+---
+
+## Sécurité
+
+- Les clés d'API ne sont **jamais** commitées dans le dépôt (présentes uniquement dans `.env`, ignoré par `.gitignore`).
+- Le fichier `firebase-service-account.json` est également ignoré par Git.
+- Toutes les requêtes entre le mobile et l'API Gateway transitent via HTTP(S) avec validation côté serveur.
+- Multer limite le nombre d'images téléchargées (max 3) pour éviter les abus.
