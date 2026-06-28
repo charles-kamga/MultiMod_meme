@@ -12,7 +12,12 @@
           "package_name": "com.multimodalmemeapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1032178390016-lnesnmupblpdrflm45sp221ap1l0h191.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBVuj-7qMsj9lciRGEmi60LaZ7TOGhFBO4"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1032178390016-lnesnmupblpdrflm45sp221ap1l0h191.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
